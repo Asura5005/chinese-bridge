@@ -3,13 +3,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-// Импортируем инструменты Firebase и наш контекст
 import { useAuth } from '@/lib/AuthContext';
 import { auth, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 
-// ─── palette ───────────────────────────────────────────────
 const C = {
     crimson: "#C0392B",
     crimsonL: "#E74C3C",
@@ -24,10 +22,8 @@ const C = {
     dimmer: "rgba(255,255,255,0.04)",
 };
 
-// ─── decorative hanzi that float in the background ─────────
 const BG_CHARS = ["学", "语", "桥", "好", "汉", "中", "你", "我", "明", "天", "友", "路"];
 
-// ─── tiny reusable input ───────────────────────────────────
 function Field({ label, type = "text", value, onChange, placeholder, error, icon, rightEl }) {
     const [focused, setFocused] = useState(false);
     const [show, setShow] = useState(false);
@@ -86,7 +82,6 @@ function Field({ label, type = "text", value, onChange, placeholder, error, icon
     );
 }
 
-// ─── social button ─────────────────────────────────────────
 function SocialBtn({ icon, label, onClick }) {
     const [hov, setHov] = useState(false);
     return (
@@ -109,7 +104,6 @@ function SocialBtn({ icon, label, onClick }) {
     );
 }
 
-// ─── animated strength bar ─────────────────────────────────
 function StrengthBar({ password }) {
     const score = (() => {
         if (!password) return 0;
@@ -139,7 +133,7 @@ function StrengthBar({ password }) {
     );
 }
 
-// ─── main export ──────────────────────────────────────────
+// ─── CSS — только добавлены мобильные стили ────────────────
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;700&display=swap');
 
@@ -163,9 +157,7 @@ const css = `
     from { opacity:0; transform: translateY(12px); }
     to   { opacity:1; transform: translateY(0); }
   }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes shake {
     0%,100%{ transform:translateX(0) }
     20%    { transform:translateX(-8px) }
@@ -187,8 +179,7 @@ const css = `
     position:relative; overflow:hidden;
   }
   .submit-btn::after {
-    content:'';
-    position:absolute; inset:0;
+    content:''; position:absolute; inset:0;
     background: linear-gradient(135deg,rgba(255,255,255,.12),transparent);
     opacity:0; transition:opacity .2s;
   }
@@ -202,8 +193,7 @@ const css = `
   .tab-btn {
     flex:1; padding:10px; border:none; background:transparent;
     font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
-    cursor:pointer; border-radius:12px; transition:all .2s;
-    letter-spacing:.2px;
+    cursor:pointer; border-radius:12px; transition:all .2s; letter-spacing:.2px;
   }
   .tab-btn.active  { background:#C0392B; color:white; box-shadow:0 6px 20px rgba(192,57,43,.35); }
   .tab-btn.inactive{ color:rgba(255,255,255,.4); }
@@ -213,22 +203,95 @@ const css = `
     display:flex; align-items:center; gap:6px;
     padding:6px 12px; border-radius:10px;
     cursor:pointer; font-size:13px; font-weight:500;
-    color:rgba(255,255,255,.45);
-    transition:all .15s;
+    color:rgba(255,255,255,.45); transition:all .15s;
     border:1.5px solid transparent;
   }
   .lang-opt:hover { color:white; background:rgba(255,255,255,.05); }
-  .lang-opt.active {
-    color:white;
-    border-color:rgba(192,57,43,.5);
-    background:rgba(192,57,43,.12);
-  }
+  .lang-opt.active { color:white; border-color:rgba(192,57,43,.5); background:rgba(192,57,43,.12); }
 
   .float-char {
     position:absolute; font-family:'Noto Serif SC',serif;
     animation: floatUp var(--dur) ease-in-out infinite;
     animation-delay: var(--delay);
     user-select:none; pointer-events:none;
+  }
+
+  /* ════════════════════════════
+     МОБАЙЛ — только стили, 
+     логика не тронута
+  ════════════════════════════ */
+  @media (max-width: 768px) {
+
+    /* Скрываем левую декоративную панель */
+    .auth-left-panel {
+      display: none !important;
+    }
+
+    /* Форма занимает весь экран */
+    .auth-grid {
+      grid-template-columns: 1fr !important;
+    }
+    .auth-right-panel {
+      padding: 28px 20px 40px !important;
+      min-height: 100vh;
+    }
+
+    /* Кнопка "Назад" ближе к краю */
+    .auth-back-btn {
+      top: 16px !important;
+      left: 16px !important;
+    }
+
+    /* Логотип мобайл — показываем вместо левой панели */
+    .auth-mobile-logo {
+      display: flex !important;
+    }
+
+    /* Языки — компактнее */
+    .auth-lang-row {
+      flex-wrap: wrap !important;
+      justify-content: center !important;
+      gap: 4px !important;
+      margin-bottom: 20px !important;
+    }
+    .lang-opt {
+      padding: 4px 8px !important;
+      font-size: 11px !important;
+    }
+
+    /* Заголовок */
+    .auth-heading {
+      font-size: 22px !important;
+    }
+    .auth-sub {
+      font-size: 13px !important;
+    }
+
+    /* Кнопка сабмит */
+    .submit-btn {
+      font-size: 15px !important;
+      padding: 14px !important;
+      border-radius: 14px !important;
+    }
+
+    /* Кнопки целей обучения — меньше отступы */
+    .goal-btn {
+      padding: 6px 10px !important;
+      font-size: 11px !important;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .auth-right-panel {
+      padding: 20px 14px 36px !important;
+    }
+    .auth-heading {
+      font-size: 19px !important;
+    }
+    .tab-btn {
+      font-size: 13px !important;
+      padding: 9px 6px !important;
+    }
   }
 `;
 
@@ -331,8 +394,8 @@ const T = {
 };
 
 export default function AuthPage() {
-    const router = useRouter(); 
-    const { loginWithGoogle } = useAuth(); // Подключаем хук для Google
+    const router = useRouter();
+    const { loginWithGoogle } = useAuth();
 
     const [tab, setTab] = useState("login");
     const [lang, setLang] = useState("ru");
@@ -362,7 +425,7 @@ export default function AuthPage() {
         return Object.keys(e).length === 0;
     };
 
-    // РЕАЛЬНАЯ АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ ПО EMAIL/ПАРОЛЮ
+    // ── ВСЯ ЛОГИКА ТВОЯ — НЕ ТРОНУТА ──────────────────────
     const handleSubmit = async () => {
         if (!validate()) { setShakeKey(k => k + 1); return; }
         if (tab === "register" && step === 1) { setStep(2); return; }
@@ -371,10 +434,7 @@ export default function AuthPage() {
 
         try {
             if (tab === "register") {
-                // Создаем аккаунт в Firebase
                 const result = await createUserWithEmailAndPassword(auth, email, password);
-                
-                // Записываем профиль в базу данных Firestore
                 await setDoc(doc(db, 'users', result.user.uid), {
                     uid: result.user.uid,
                     name: name,
@@ -387,14 +447,12 @@ export default function AuthPage() {
                     joinDate: new Date().toISOString()
                 });
             } else {
-                // Входим в существующий аккаунт
                 await signInWithEmailAndPassword(auth, email, password);
             }
 
             setLoading(false);
             setSuccess(true);
 
-            // Перенаправляем в Профиль
             setTimeout(() => {
                 router.push('/profile');
             }, 2000);
@@ -406,7 +464,6 @@ export default function AuthPage() {
         }
     };
 
-    // ЛОГИН ЧЕРЕЗ GOOGLE
     const handleGoogleClick = async () => {
         try {
             await loginWithGoogle();
@@ -424,8 +481,8 @@ export default function AuthPage() {
         setEmail(""); setPassword(""); setConfirm(""); setName(""); setGoal("");
         setSuccess(false);
     };
+    // ───────────────────────────────────────────────────────
 
-    // ── SUCCESS STATE ───────────────────────────────────────
     if (success) {
         return (
             <>
@@ -439,7 +496,7 @@ export default function AuthPage() {
                         <div style={{ fontSize: 15, color: "rgba(255,255,255,.5)", marginBottom: 8 }}>
                             {tab === "login" ? `С возвращением, ${email}` : `Привет, ${name}! 你好！`}
                         </div>
-                        <div className="cb-hanzi" style={{ fontFamily: "'Noto Serif SC',serif", fontSize: 48, color: C.crimson, margin: "16px 0" }}>
+                        <div style={{ fontFamily: "'Noto Serif SC',serif", fontSize: 48, color: C.crimson, margin: "16px 0" }}>
                             欢迎
                         </div>
                         <div style={{ fontSize: 13, color: "rgba(255,255,255,.3)", marginBottom: 28 }}>
@@ -455,150 +512,210 @@ export default function AuthPage() {
     return (
         <>
             <style>{css}</style>
-            <div className="auth-root" style={{ minHeight: "100vh", background: C.ink, display: "grid", gridTemplateColumns: "1fr 1fr", position: "relative", overflow: "hidden" }}>
-                
-                {/* КНОПКА НАЗАД */}
-                <Link href="/" style={{ position: "absolute", top: 32, left: 32, color: "rgba(255,255,255,0.4)", textDecoration: "none", zIndex: 10, fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, transition: "color 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.color = "white"} onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.4)"}>
+            <div className="auth-root">
+
+                {/* ── Кнопка назад ── */}
+                <Link
+                    href="/"
+                    className="auth-back-btn"
+                    style={{ position: "absolute", top: 32, left: 32, color: "rgba(255,255,255,0.4)", textDecoration: "none", zIndex: 10, fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, transition: "color 0.2s" }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = "white"}
+                    onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.4)"}
+                >
                     <span style={{ fontSize: 18 }}>←</span> На главную
                 </Link>
 
-                {/* LEFT PANEL */}
-                <div style={{ position: "relative", background: C.ink2, borderRight: `1px solid ${C.dim}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 60, overflow: "hidden" }}>
-                    {BG_CHARS.map((ch, i) => (
-                        <div key={i} className="float-char" style={{
-                            fontSize: 60 + (i % 4) * 30, color: "rgba(255,255,255,1)", top: `${8 + (i * 7.5) % 85}%`, left: `${5 + (i * 11) % 80}%`, "--r": `${(i % 3 - 1) * 12}deg`, "--dur": `${6 + (i % 4)}s`, "--delay": `${-(i * 1.1)}s`,
-                        }}>
-                            {ch}
-                        </div>
-                    ))}
-
-                    <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 48 }}>
-                            <span style={{ fontFamily: "'Noto Serif SC',serif", fontSize: 32, color: C.crimson }}>桥</span>
-                            <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 24, fontWeight: 700, color: "white" }}>ChineseBridge</span>
-                        </div>
-
-                        <div style={{ fontFamily: "'Noto Serif SC',serif", fontSize: 110, lineHeight: 1, color: "white", marginBottom: 10, textShadow: `0 0 60px rgba(192,57,43,.3)` }}>
-                            {tab === "login" ? "欢迎" : "开始"}
-                        </div>
-                        <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: "rgba(255,255,255,.45)", marginBottom: 40 }}>
-                            {tab === "login" ? '"Welcome back"' : '"Let\'s begin"'}
-                        </div>
-
-                        {["🎯 Умные тесты", "🔊 Аудио тоны", "📊 Прогресс", "🏆 Рейтинг", "✍️ Иероглифы"].map((f, i) => (
-                            <div key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,.05)", border: `1px solid ${C.dim}`, borderRadius: 20, padding: "6px 14px", fontSize: 13, color: "rgba(255,255,255,.6)", margin: 4 }}>
-                                {f}
-                            </div>
-                        ))}
-                    </div>
+                {/* ── Мобайл: логотип вместо левой панели ── */}
+                <div
+                    className="auth-mobile-logo"
+                    style={{
+                        display: "none", /* показывается только на мобайле через CSS */
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10,
+                        paddingTop: 60,
+                        paddingBottom: 8,
+                    }}
+                >
+                    <span style={{ fontFamily: "'Noto Serif SC',serif", fontSize: 28, color: C.crimson }}>桥</span>
+                    <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontWeight: 700, color: "white" }}>ChineseBridge</span>
                 </div>
 
-                {/* RIGHT PANEL */}
-                <div style={{ display: "flex", flexDirection: "column", padding: "40px 56px", overflowY: "auto" }}>
+                {/* ── Основная сетка ── */}
+                <div
+                    className="auth-grid"
+                    style={{
+                        minHeight: "100vh",
+                        background: C.ink,
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        position: "relative",
+                        overflow: "hidden",
+                    }}
+                >
 
-                    <div style={{ display: "flex", gap: 4, justifyContent: "flex-end", marginBottom: 32 }}>
-                        {LANGS.map(l => (
-                            <div key={l.code} className={`lang-opt ${lang === l.code ? "active" : ""}`} onClick={() => setLang(l.code)}>
-                                {l.flag} {l.label}
+                    {/* ── ЛЕВАЯ ПАНЕЛЬ (декоративная, скрывается на мобайле) ── */}
+                    <div
+                        className="auth-left-panel"
+                        style={{ position: "relative", background: C.ink2, borderRight: `1px solid ${C.dim}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 60, overflow: "hidden" }}
+                    >
+                        {BG_CHARS.map((ch, i) => (
+                            <div key={i} className="float-char" style={{
+                                fontSize: 60 + (i % 4) * 30,
+                                color: "rgba(255,255,255,1)",
+                                top: `${8 + (i * 7.5) % 85}%`,
+                                left: `${5 + (i * 11) % 80}%`,
+                                "--r": `${(i % 3 - 1) * 12}deg`,
+                                "--dur": `${6 + (i % 4)}s`,
+                                "--delay": `${-(i * 1.1)}s`,
+                            }}>
+                                {ch}
                             </div>
                         ))}
-                    </div>
 
-                    <div style={{ display: "flex", gap: 4, background: C.ink3, borderRadius: 16, padding: 5, marginBottom: 36, border: `1px solid ${C.dim}` }}>
-                        <button className={`tab-btn ${tab === "login" ? "active" : "inactive"}`} onClick={() => switchTab("login")}>{t.login}</button>
-                        <button className={`tab-btn ${tab === "register" ? "active" : "inactive"}`} onClick={() => switchTab("register")}>{t.register}</button>
-                    </div>
-
-                    <div className="anim-slide" key={tab} style={{ marginBottom: 32 }}>
-                        <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 900, letterSpacing: -.5, color: "white", marginBottom: 6 }}>
-                            {tab === "login" ? t.welcome : t.join}
-                        </div>
-                        <div style={{ fontSize: 15, color: "rgba(255,255,255,.4)", fontWeight: 300 }}>
-                            {tab === "login" ? t.welcomeSub : t.joinSub}
-                        </div>
-                        {tab === "register" && (
-                            <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-                                {[1, 2].map(s => (
-                                    <div key={s} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                        <div style={{ width: 26, height: 26, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, background: step >= s ? C.crimson : C.ink3, border: `1.5px solid ${step >= s ? C.crimson : C.dim}`, color: step >= s ? "white" : "rgba(255,255,255,.3)", transition: "all .3s" }}>
-                                            {step > s ? "✓" : s}
-                                        </div>
-                                        <div style={{ fontSize: 12, color: step >= s ? "rgba(255,255,255,.7)" : "rgba(255,255,255,.25)" }}>
-                                            {s === 1 ? "Профиль" : "Безопасность"}
-                                        </div>
-                                        {s < 2 && <div style={{ width: 24, height: 1, background: step > 1 ? C.crimson : C.dim, transition: "background .3s" }} />}
-                                    </div>
-                                ))}
+                        <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 48 }}>
+                                <span style={{ fontFamily: "'Noto Serif SC',serif", fontSize: 32, color: C.crimson }}>桥</span>
+                                <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 24, fontWeight: 700, color: "white" }}>ChineseBridge</span>
                             </div>
-                        )}
+                            <div style={{ fontFamily: "'Noto Serif SC',serif", fontSize: 110, lineHeight: 1, color: "white", marginBottom: 10, textShadow: `0 0 60px rgba(192,57,43,.3)` }}>
+                                {tab === "login" ? "欢迎" : "开始"}
+                            </div>
+                            <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: "rgba(255,255,255,.45)", marginBottom: 40 }}>
+                                {tab === "login" ? '"Welcome back"' : '"Let\'s begin"'}
+                            </div>
+                            {["🎯 Умные тесты", "🔊 Аудио тоны", "📊 Прогресс", "🏆 Рейтинг", "✍️ Иероглифы"].map((f, i) => (
+                                <div key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,.05)", border: `1px solid ${C.dim}`, borderRadius: 20, padding: "6px 14px", fontSize: 13, color: "rgba(255,255,255,.6)", margin: 4 }}>
+                                    {f}
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                    <div className={shakeKey ? "anim-shake" : ""} key={`form-${tab}-${step}-${shakeKey}`}>
-
-                        {tab === "login" && (
-                            <>
-                                <Field label={t.email} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.emailPh} error={errors.email} icon="✉️" />
-                                <Field label={t.password} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t.passPh} error={errors.password} icon="🔒" />
-                                <div style={{ textAlign: "right", marginBottom: 20, marginTop: -8 }}>
-                                    <button style={{ background: "none", border: "none", color: "rgba(255,255,255,.4)", fontSize: 13, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>{t.forgot}</button>
+                    {/* ── ПРАВАЯ ПАНЕЛЬ (форма) ── */}
+                    <div
+                        className="auth-right-panel"
+                        style={{ display: "flex", flexDirection: "column", padding: "40px 56px", overflowY: "auto" }}
+                    >
+                        {/* Выбор языка */}
+                        <div className="auth-lang-row" style={{ display: "flex", gap: 4, justifyContent: "flex-end", marginBottom: 32 }}>
+                            {LANGS.map(l => (
+                                <div key={l.code} className={`lang-opt ${lang === l.code ? "active" : ""}`} onClick={() => setLang(l.code)}>
+                                    {l.flag} {l.label}
                                 </div>
-                            </>
-                        )}
+                            ))}
+                        </div>
 
-                        {tab === "register" && step === 1 && (
-                            <>
-                                <Field label={t.name} value={name} onChange={e => setName(e.target.value)} placeholder={t.namePh} error={errors.name} icon="👤" />
-                                <Field label={t.email} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.emailPh} error={errors.email} icon="✉️" />
-                                <div style={{ marginBottom: 16 }}>
-                                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, letterSpacing: 1, color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginBottom: 8 }}>{t.goal}</label>
-                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                                        {t.goals.map(g => (
-                                            <button key={g} onClick={() => setGoal(g)} style={{ padding: "7px 13px", borderRadius: 20, border: `1.5px solid ${goal === g ? C.crimson : C.dim}`, background: goal === g ? "rgba(192,57,43,.15)" : "transparent", color: goal === g ? "white" : "rgba(255,255,255,.4)", fontSize: 12, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all .18s" }}>
-                                                {g}
-                                            </button>
-                                        ))}
+                        {/* Табы войти/регистрация */}
+                        <div className="auth-tab-row" style={{ display: "flex", gap: 4, background: C.ink3, borderRadius: 16, padding: 5, marginBottom: 36, border: `1px solid ${C.dim}` }}>
+                            <button className={`tab-btn ${tab === "login" ? "active" : "inactive"}`} onClick={() => switchTab("login")}>{t.login}</button>
+                            <button className={`tab-btn ${tab === "register" ? "active" : "inactive"}`} onClick={() => switchTab("register")}>{t.register}</button>
+                        </div>
+
+                        {/* Заголовок + степпер */}
+                        <div className="anim-slide" key={tab} style={{ marginBottom: 32 }}>
+                            <div className="auth-heading" style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 900, letterSpacing: -.5, color: "white", marginBottom: 6 }}>
+                                {tab === "login" ? t.welcome : t.join}
+                            </div>
+                            <div className="auth-sub" style={{ fontSize: 15, color: "rgba(255,255,255,.4)", fontWeight: 300 }}>
+                                {tab === "login" ? t.welcomeSub : t.joinSub}
+                            </div>
+                            {tab === "register" && (
+                                <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
+                                    {[1, 2].map(s => (
+                                        <div key={s} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                            <div style={{ width: 26, height: 26, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, background: step >= s ? C.crimson : C.ink3, border: `1.5px solid ${step >= s ? C.crimson : C.dim}`, color: step >= s ? "white" : "rgba(255,255,255,.3)", transition: "all .3s" }}>
+                                                {step > s ? "✓" : s}
+                                            </div>
+                                            <div style={{ fontSize: 12, color: step >= s ? "rgba(255,255,255,.7)" : "rgba(255,255,255,.25)" }}>
+                                                {s === 1 ? "Профиль" : "Безопасность"}
+                                            </div>
+                                            {s < 2 && <div style={{ width: 24, height: 1, background: step > 1 ? C.crimson : C.dim, transition: "background .3s" }} />}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Форма */}
+                        <div className={shakeKey ? "anim-shake" : ""} key={`form-${tab}-${step}-${shakeKey}`}>
+
+                            {tab === "login" && (
+                                <>
+                                    <Field label={t.email} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.emailPh} error={errors.email} icon="✉️" />
+                                    <Field label={t.password} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t.passPh} error={errors.password} icon="🔒" />
+                                    <div style={{ textAlign: "right", marginBottom: 20, marginTop: -8 }}>
+                                        <button style={{ background: "none", border: "none", color: "rgba(255,255,255,.4)", fontSize: 13, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>{t.forgot}</button>
                                     </div>
-                                </div>
-                            </>
-                        )}
+                                </>
+                            )}
 
-                        {tab === "register" && step === 2 && (
-                            <>
-                                <Field label={t.password} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t.passPh} error={errors.password} icon="🔒" />
-                                <StrengthBar password={password} />
-                                <Field label={t.confirm} type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder={t.confirmPh} error={errors.confirm} icon="🔐" />
-                            </>
-                        )}
+                            {tab === "register" && step === 1 && (
+                                <>
+                                    <Field label={t.name} value={name} onChange={e => setName(e.target.value)} placeholder={t.namePh} error={errors.name} icon="👤" />
+                                    <Field label={t.email} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.emailPh} error={errors.email} icon="✉️" />
+                                    <div style={{ marginBottom: 16 }}>
+                                        <label style={{ display: "block", fontSize: 12, fontWeight: 600, letterSpacing: 1, color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginBottom: 8 }}>{t.goal}</label>
+                                        <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                                            {t.goals.map(g => (
+                                                <button
+                                                    key={g}
+                                                    className="goal-btn"
+                                                    onClick={() => setGoal(g)}
+                                                    style={{ padding: "7px 13px", borderRadius: 20, border: `1.5px solid ${goal === g ? C.crimson : C.dim}`, background: goal === g ? "rgba(192,57,43,.15)" : "transparent", color: goal === g ? "white" : "rgba(255,255,255,.4)", fontSize: 12, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all .18s" }}
+                                                >
+                                                    {g}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
 
-                        <button className="submit-btn" disabled={loading} onClick={handleSubmit} style={{ marginTop: 4 }}>
-                            {loading
-                                ? <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                                    <span style={{ width: 18, height: 18, border: "2.5px solid rgba(255,255,255,.3)", borderTop: "2.5px solid white", borderRadius: "50%", animation: "spin 1s linear infinite", display: "inline-block" }} />
-                                    {t.loading}
-                                </span>
-                                : tab === "login" ? t.submit_login : step === 1 ? "Далее →" : t.submit_reg
-                            }
-                        </button>
+                            {tab === "register" && step === 2 && (
+                                <>
+                                    <Field label={t.password} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t.passPh} error={errors.password} icon="🔒" />
+                                    <StrengthBar password={password} />
+                                    <Field label={t.confirm} type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder={t.confirmPh} error={errors.confirm} icon="🔐" />
+                                </>
+                            )}
 
-                        <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "22px 0 16px" }}>
-                            <div style={{ flex: 1, height: 1, background: C.dim }} />
-                            <span style={{ fontSize: 12, color: "rgba(255,255,255,.3)", whiteSpace: "nowrap" }}>{t.orWith}</span>
-                            <div style={{ flex: 1, height: 1, background: C.dim }} />
-                        </div>
-                        
-                        {/* ─── ТОЛЬКО ОДНА КНОПКА GOOGLE ─── */}
-                        <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
-                            <SocialBtn icon="🇬" label="Войти через Google" onClick={handleGoogleClick} />
-                        </div>
-
-                        <div style={{ textAlign: "center", fontSize: 14, color: "rgba(255,255,255,.4)" }}>
-                            {tab === "login" ? t.noAcc : t.hasAcc}{" "}
-                            <button onClick={() => switchTab(tab === "login" ? "register" : "login")}
-                                style={{ background: "none", border: "none", color: C.crimson, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", fontSize: 14 }}>
-                                {tab === "login" ? t.register : t.login}
+                            <button className="submit-btn" disabled={loading} onClick={handleSubmit} style={{ marginTop: 4 }}>
+                                {loading
+                                    ? <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                                        <span style={{ width: 18, height: 18, border: "2.5px solid rgba(255,255,255,.3)", borderTop: "2.5px solid white", borderRadius: "50%", animation: "spin 1s linear infinite", display: "inline-block" }} />
+                                        {t.loading}
+                                    </span>
+                                    : tab === "login" ? t.submit_login : step === 1 ? "Далее →" : t.submit_reg
+                                }
                             </button>
+
+                            <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "22px 0 16px" }}>
+                                <div style={{ flex: 1, height: 1, background: C.dim }} />
+                                <span style={{ fontSize: 12, color: "rgba(255,255,255,.3)", whiteSpace: "nowrap" }}>{t.orWith}</span>
+                                <div style={{ flex: 1, height: 1, background: C.dim }} />
+                            </div>
+
+                            <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
+                                <SocialBtn icon="🇬" label="Войти через Google" onClick={handleGoogleClick} />
+                            </div>
+
+                            <div style={{ textAlign: "center", fontSize: 14, color: "rgba(255,255,255,.4)" }}>
+                                {tab === "login" ? t.noAcc : t.hasAcc}{" "}
+                                <button
+                                    onClick={() => switchTab(tab === "login" ? "register" : "login")}
+                                    style={{ background: "none", border: "none", color: C.crimson, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", fontSize: 14 }}
+                                >
+                                    {tab === "login" ? t.register : t.login}
+                                </button>
+                            </div>
+
+                            {tab === "register" && (
+                                <div style={{ textAlign: "center", fontSize: 11, color: "rgba(255,255,255,.2)", marginTop: 16, lineHeight: 1.5 }}>
+                                    {t.terms}
+                                </div>
+                            )}
                         </div>
-                        {tab === "register" && <div style={{ textAlign: "center", fontSize: 11, color: "rgba(255,255,255,.2)", marginTop: 16, lineHeight: 1.5 }}>{t.terms}</div>}
                     </div>
                 </div>
             </div>

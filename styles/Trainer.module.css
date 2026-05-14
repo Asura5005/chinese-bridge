@@ -40,3 +40,142 @@
 
 /* Прячем скроллбар */
 .root ::-webkit-scrollbar { width: 0; }
+
+/* ════════════════════════════════════════════
+   ДОБАВЬ ЭТО В КОНЕЦ своего Trainer.module.css
+   Всё остальное не трогай
+════════════════════════════════════════════ */
+
+/* ── Основная сетка ── */
+.trainerGrid {
+  display: grid;
+  grid-template-columns: 220px 1fr 240px;
+  min-height: calc(100vh - 52px);
+}
+
+/* ── Сайдбары ── */
+.sidebar {
+  background: #141414;
+  border-right: 1px solid rgba(255,255,255,.07);
+  padding: 20px 0;
+}
+
+.rightSidebar {
+  background: #141414;
+  border-left: 1px solid rgba(255,255,255,.07);
+  padding: 20px 16px;
+}
+
+/* ── Центр ── */
+.trainerMain {
+  padding: 28px 32px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+}
+
+/* ── Мобайл: нижняя панель режимов ── */
+.mobileModebar {
+  display: none; /* скрыто на десктопе */
+}
+
+/* ── Мобайл: мини score-бар ── */
+.mobileScorebar {
+  display: none; /* скрыто на десктопе */
+}
+
+/* ════════════════════════════════════════════
+   МОБАЙЛ ≤ 768px
+════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Сетка — одна колонка, боковые сайдбары скрыты */
+  .trainerGrid {
+    grid-template-columns: 1fr;
+    min-height: calc(100vh - 52px - 56px); /* -56px под нижнюю панель */
+    padding-bottom: 70px; /* место для нижнего бара */
+  }
+
+  .sidebar,
+  .rightSidebar {
+    display: none;
+  }
+
+  /* Центр — меньше паддинг */
+  .trainerMain {
+    padding: 16px 14px;
+    max-width: 100%;
+  }
+
+  /* ── Нижняя панель режимов ── */
+  .mobileModebar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: rgba(20, 20, 20, 0.97);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255,255,255,.08);
+    height: 60px;
+  }
+
+  .mobileModeBtn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: none;
+    border-top: 2px solid transparent;
+    cursor: pointer;
+    transition: all .18s;
+    padding: 6px 4px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── Мини счёт под топнавом ── */
+  .mobileScorebar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 7px 16px;
+    background: rgba(255,255,255,.03);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* Карточка — меньше паддинг на телефоне */
+  .animCardIn {
+    padding: 24px 18px !important;
+  }
+
+  /* Иероглиф чуть меньше */
+  .hanzi {
+    font-size: 64px !important;
+  }
+
+  /* Кнопки ответов — одна колонка если очень узко */
+}
+
+/* ════════════════════════════════════════════
+   ОЧЕНЬ МАЛЕНЬКИЙ ЭКРАН ≤ 400px
+════════════════════════════════════════════ */
+@media (max-width: 400px) {
+  .trainerMain {
+    padding: 12px 10px;
+  }
+
+  .hanzi {
+    font-size: 54px !important;
+  }
+
+  .mobileModebar {
+    height: 56px;
+  }
+}
