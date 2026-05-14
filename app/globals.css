@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;700&display=swap');
+
+:root {
+  --crimson: #C0392B;
+  --crimson-light: #E74C3C;
+  --gold: #D4A017;
+  --gold-light: #F1C40F;
+  --ink: #0D0D0D;
+  --ink-soft: #1a1a1a;
+  --paper: #FAF7F2;
+  --paper-warm: #F5EFE0;
+  --mist: #E8E0D0;
+  --sage: #5D8A6E;
+  --stone: #8C8070;
+  --white: #FFFFFF;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--ink);
+  color: var(--white);
+  overflow-x: hidden;
+  cursor: none; /* Убираем стандартный курсор для кастомного */
+}
+
+a { text-decoration: none; }
+
+/* Scroll Reveal Animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -1,0 +1,42 @@
+.root { font-family: 'DM Sans', sans-serif; background: #0D0D0D; color: white; min-height: 100vh; }
+.hanzi { font-family: 'Noto Serif SC', serif; }
+.display { font-family: 'Playfair Display', serif; }
+
+.animCardIn { animation: cardIn 0.35s ease both; }
+.animCorrect { animation: correctPop 0.3s ease; }
+.animWrong { animation: shake 0.3s ease; }
+.animFadeUp { animation: fadeUp 0.25s ease both; }
+.animFlipIn { animation: flipIn 0.4s ease both; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes correctPop { 0% {transform:scale(1)} 40% {transform:scale(1.05)} 100% {transform:scale(1)} }
+@keyframes shake { 0%,100% {transform:translateX(0)} 25% {transform:translateX(-7px)} 75% {transform:translateX(7px)} }
+@keyframes fadeUp { from {opacity:0;transform:translateY(10px)} to {opacity:1;transform:translateY(0)} }
+@keyframes flipIn { from {transform:rotateY(90deg);opacity:0} to {transform:rotateY(0deg);opacity:1} }
+
+.optBtn { transition: all 0.18s; }
+.optBtn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+
+.modeBtn { transition: all 0.18s; border-left: 3px solid transparent; }
+.modeBtn.active { border-left-color: #C0392B; background: rgba(192,57,43,0.1); color: white; }
+.modeBtn:hover:not(.active) { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.8); }
+
+.hskPill { transition: all 0.18s; cursor: pointer; }
+.hskPill.active { background: rgba(192,57,43,0.2); border-color: #C0392B; color: white; }
+
+.nextBtn { transition: all 0.2s; }
+.nextBtn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(192,57,43,0.4); }
+
+.fcWrap { perspective: 1200px; }
+.fcInner { transition: transform 0.55s cubic-bezier(0.4,0,0.2,1); transform-style: preserve-3d; width: 100%; height: 280px; position: relative; }
+.fcInner.flipped { transform: rotateY(180deg); }
+.fcFace { backface-visibility: hidden; position: absolute; inset: 0; border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+.fcBack { transform: rotateY(180deg); background: linear-gradient(135deg,#1a0a08,#2a0e0a); border: 1px solid rgba(192,57,43,0.3); }
+
+.dotCur { box-shadow: 0 0 8px rgba(212,160,23,0.7); }
+
+/* Прячем скроллбар */
+.root ::-webkit-scrollbar { width: 0; }
