@@ -1,14 +1,19 @@
 'use client'
 import { useState, useEffect, useRef } from "react";
 import Link from 'next/link';
-import { Target, Layers, MessageSquare, PenTool, Edit3, Loader2, Menu, X } from 'lucide-react';
+import { Target, Layers, MessageSquare, PenTool, Edit3, Loader2, Search, X } from 'lucide-react';
 import HanziDraw from '@/components/Trainer/HanziDraw';
 import TopNav from '@/components/UI/TopNav';
 import styles from '@/styles/Trainer.module.css';
 
+// ── ВСЕ ПОДКЛЮЧЕНИЯ ТВОИ — НЕ ТРОНУТЫ ──
 import { useWords } from '@/lib/useWords';
 import { useAuth } from '@/lib/AuthContext';
 import LockOverlay from '@/components/UI/LockOverlay';
+
+// ── Firebase — твоё подключение ──
+import { db } from '@/lib/firebase';
+import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 
 // ══════════════════════════════════════════
 // DATA FOR DIALOGUES — не тронуто
@@ -64,7 +69,6 @@ const ProgressBar = ({ value }) => (
 // ══════════════════════════════════════════
 // MODES — не тронуто, ни одна строка
 // ══════════════════════════════════════════
-
 function QuizMode({ vocab, onScore, onFinish }) {
   const items = useRef(shuffle(vocab).slice(0, 10));
   const [idx, setIdx] = useState(0);
@@ -177,26 +181,11 @@ function DialogueMode({ onScore, onFinish }) {
   const [answered, setAnswered] = useState(false);
   const [chosen, setChosen] = useState(null);
   const [options, setOptions] = useState([]);
-
   const d = DIALOGUES[dlIdx];
-
-  useEffect(() => {
-    if (d) setOptions(shuffle([d.correct, ...d.wrong]));
-  }, [d]);
-
+  useEffect(() => { if (d) setOptions(shuffle([d.correct, ...d.wrong])); }, [d]);
   if (!d) return null;
-
-  const check = (opt) => {
-    if (answered) return;
-    setAnswered(true); setChosen(opt);
-    onScore(opt === d.correct);
-  };
-
-  const next = () => {
-    if (dlIdx + 1 >= DIALOGUES.length) return onFinish();
-    setDlIdx(i => i + 1); setAnswered(false); setChosen(null);
-  };
-
+  const check = (opt) => { if (answered) return; setAnswered(true); setChosen(opt); onScore(opt === d.correct); };
+  const next = () => { if (dlIdx + 1 >= DIALOGUES.length) return onFinish(); setDlIdx(i => i + 1); setAnswered(false); setChosen(null); };
   return (
     <div className={styles.animFadeUp}>
       <ProgressBar value={(dlIdx / DIALOGUES.length) * 100} />
@@ -204,9 +193,7 @@ function DialogueMode({ onScore, onFinish }) {
         <div style={{ fontSize: 11, letterSpacing: 2, color: "rgba(255,255,255,.3)", textTransform: "uppercase", marginBottom: 18 }}>💬 {d.title}</div>
         {d.lines.map((line, i) => (
           <div key={i} style={{ display: "flex", gap: 12, marginBottom: 14, alignItems: "flex-start" }}>
-            <div style={{ padding: "4px 10px", borderRadius: 8, fontSize: 13, fontWeight: 700, flexShrink: 0, marginTop: 2, ...(line.who === "A" ? { background: "rgba(192,57,43,.2)", color: "#E87060", border: "1px solid rgba(192,57,43,.3)" } : { background: "rgba(255,255,255,.06)", color: "rgba(255,255,255,.7)", border: "1px solid rgba(255,255,255,.1)" }) }}>
-              {line.who}
-            </div>
+            <div style={{ padding: "4px 10px", borderRadius: 8, fontSize: 13, fontWeight: 700, flexShrink: 0, marginTop: 2, ...(line.who === "A" ? { background: "rgba(192,57,43,.2)", color: "#E87060", border: "1px solid rgba(192,57,43,.3)" } : { background: "rgba(255,255,255,.06)", color: "rgba(255,255,255,.7)", border: "1px solid rgba(255,255,255,.1)" }) }}>{line.who}</div>
             <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 14, padding: "12px 16px", cursor: 'pointer' }} onClick={() => speak(line.h)}>
               <div className={styles.hanzi} style={{ fontSize: 19, color: "white" }}>{line.h}</div>
               <div style={{ fontSize: 12, color: '#C0392B', letterSpacing: 1, marginTop: 4 }}>{line.p}</div>
@@ -223,11 +210,7 @@ function DialogueMode({ onScore, onFinish }) {
             if (opt === d.correct) { bg = "rgba(93,138,110,.2)"; border = "#5D8A6E"; color = "#b7e4c7"; anim = styles.animCorrect; }
             else if (opt === chosen) { bg = "rgba(192,57,43,.2)"; border = "#C0392B"; color = "#ffb3b3"; anim = styles.animWrong; }
           }
-          return (
-            <button key={opt} disabled={answered} onClick={() => check(opt)} className={`${styles.optBtn} ${anim}`} style={{ background: bg, border: `2px solid ${border}`, color, borderRadius: 14, padding: "14px 10px", fontSize: 14, fontWeight: 500, cursor: answered ? "default" : "pointer" }}>
-              {opt}
-            </button>
-          );
+          return <button key={opt} disabled={answered} onClick={() => check(opt)} className={`${styles.optBtn} ${anim}`} style={{ background: bg, border: `2px solid ${border}`, color, borderRadius: 14, padding: "14px 10px", fontSize: 14, fontWeight: 500, cursor: answered ? "default" : "pointer" }}>{opt}</button>;
         })}
       </div>
       {answered && <button className={styles.nextBtn} onClick={next} style={{ width: "100%", padding: 15, borderRadius: 14, background: '#C0392B', color: "white", border: "none", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>Следующий →</button>}
@@ -243,10 +226,8 @@ function TypeMode({ vocab, onScore, onFinish }) {
   const [ok, setOk] = useState(false);
   const inputRef = useRef(null);
   const item = items.current[idx];
-
   useEffect(() => { if (inputRef.current && !answered) inputRef.current.focus(); }, [idx, answered]);
   if (!item) return null;
-
   const check = () => {
     if (answered || !input.trim()) return;
     const val = input.trim().toLowerCase();
@@ -254,7 +235,6 @@ function TypeMode({ vocab, onScore, onFinish }) {
     const isCorrect = ans.includes(val) || val.includes(ans.slice(0, 4));
     setAnswered(true); setOk(isCorrect); onScore(isCorrect);
   };
-
   return (
     <div className={styles.animFadeUp}>
       <ProgressBar value={(idx / items.current.length) * 100} />
@@ -266,8 +246,7 @@ function TypeMode({ vocab, onScore, onFinish }) {
       </div>
       <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
         <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && check()} disabled={answered} placeholder="Введи перевод..."
-          style={{ flex: 1, background: "rgba(255,255,255,.05)", border: `1.5px solid ${answered ? (ok ? '#7EC89A' : '#C0392B') : "rgba(255,255,255,.12)"}`, color: "white", borderRadius: 14, padding: "14px 18px", fontSize: 17, outline: "none", transition: "border-color .2s" }}
-        />
+          style={{ flex: 1, background: "rgba(255,255,255,.05)", border: `1.5px solid ${answered ? (ok ? '#7EC89A' : '#C0392B') : "rgba(255,255,255,.12)"}`, color: "white", borderRadius: 14, padding: "14px 18px", fontSize: 17, outline: "none", transition: "border-color .2s" }} />
         <button onClick={check} style={{ background: '#C0392B', border: "none", color: "white", borderRadius: 14, padding: "14px 24px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>OK</button>
       </div>
       {answered && (
@@ -286,15 +265,8 @@ function DrawMode({ vocab, onScore, onFinish }) {
   const items = useRef(shuffle(singleCharWords).slice(0, 5));
   const [idx, setIdx] = useState(0);
   const item = items.current[idx];
-
   if (!item) return <div style={{ textAlign: 'center' }}>Мало одиночных иероглифов в базе.</div>;
-
-  const handleComplete = (isCorrect) => {
-    onScore(isCorrect);
-    if (idx + 1 >= items.current.length) onFinish();
-    else setIdx(i => i + 1);
-  };
-
+  const handleComplete = (isCorrect) => { onScore(isCorrect); if (idx + 1 >= items.current.length) onFinish(); else setIdx(i => i + 1); };
   return (
     <div className={styles.animFadeUp}>
       <ProgressBar value={(idx / items.current.length) * 100} />
@@ -311,18 +283,173 @@ function DrawMode({ vocab, onScore, onFinish }) {
 // MODES CONFIG — не тронуто
 // ══════════════════════════════════════════
 const MODES = [
-  { id: "quiz",      icon: <Target size={20} />,       name: "Тест",      desc: "4 варианта" },
-  { id: "flashcard", icon: <Layers size={20} />,       name: "Карточки",  desc: "Переворот"  },
-  { id: "dialogue",  icon: <MessageSquare size={20} />, name: "Диалог",   desc: "Ситуации"   },
-  { id: "type",      icon: <Edit3 size={20} />,        name: "Ввод",      desc: "Пиши сам"   },
-  { id: "draw",      icon: <PenTool size={20} />,      name: "Рисование", desc: "HanziWriter" },
+  { id: "quiz",      icon: <Target size={20} />,        name: "Тест",      desc: "4 варианта"  },
+  { id: "flashcard", icon: <Layers size={20} />,        name: "Карточки",  desc: "Переворот"   },
+  { id: "dialogue",  icon: <MessageSquare size={20} />, name: "Диалог",    desc: "Ситуации"    },
+  { id: "type",      icon: <Edit3 size={20} />,         name: "Ввод",      desc: "Пиши сам"    },
+  { id: "draw",      icon: <PenTool size={20} />,       name: "Рисование", desc: "HanziWriter" },
 ];
 
+const HSK_COLORS = {
+  1: "#7EC89A", 2: "#60B4D0", 3: "#D4A017",
+  4: "#E8A060", 5: "#E74C3C", 6: "#C0392B"
+};
+
 // ══════════════════════════════════════════
-// MAIN PAGE — логика не тронута,
-// добавлен только мобайл-стейт sidebarOpen
+// НОВЫЙ КОМПОНЕНТ: HSK + CATEGORY FILTER BAR
+// ══════════════════════════════════════════
+function FilterBar({ allWords, selectedHsk, setSelectedHsk, selectedCats, setSelectedCats, selectedWords, setSelectedWords }) {
+  const [categories, setCategories] = useState([]);
+  const [catOpen, setCatOpen] = useState(false);
+  const [searchQ, setSearchQ] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const searchRef = useRef(null);
+
+  // Загружаем категории из Firebase — твоё подключение db
+  useEffect(() => {
+    const q = query(collection(db, "categories"), orderBy("createdAt", "desc"));
+    const unsub = onSnapshot(q, snap => {
+      setCategories(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    return () => unsub();
+  }, []);
+
+  // Категории только выбранного HSK
+  const hskCats = categories.filter(c => Number(c.hsk) === selectedHsk);
+
+  // Поиск по пиньинь без тонов
+  const pinyinBase = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  useEffect(() => {
+    if (!searchQ.trim()) { setSearchResults([]); return; }
+    const q = searchQ.trim().toLowerCase();
+    const results = allWords.filter(w => pinyinBase(w.p).includes(q) || w.h.includes(q) || w.ru.toLowerCase().includes(q));
+    setSearchResults(results.slice(0, 12));
+  }, [searchQ, allWords]);
+
+  const toggleCat = (cat) => {
+    setSelectedCats(prev => {
+      const exists = prev.find(c => c.id === cat.id);
+      if (exists) return prev.filter(c => c.id !== cat.id);
+      return [...prev, cat];
+    });
+  };
+
+  const addWord = (word) => {
+    if (!selectedWords.find(w => w.id === word.id)) {
+      setSelectedWords(prev => [...prev, word]);
+    }
+    setSearchQ("");
+    setSearchResults([]);
+  };
+
+  const removeWord = (id) => setSelectedWords(prev => prev.filter(w => w.id !== id));
+  const removeCat  = (id) => setSelectedCats(prev => prev.filter(c => c.id !== id));
+
+  return (
+    <div style={{ borderBottom: "1px solid rgba(255,255,255,.07)", background: "#111" }}>
+
+      {/* ── HSK BAR ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", overflowX: "auto", scrollbarWidth: "none" }}>
+        <span style={{ fontSize: 10, letterSpacing: 2, color: "rgba(255,255,255,.25)", textTransform: "uppercase", whiteSpace: "nowrap", marginRight: 4 }}>HSK</span>
+        {[1,2,3,4,5,6].map(n => (
+          <button key={n}
+            onClick={() => { setSelectedHsk(n); setSelectedCats([]); setCatOpen(false); }}
+            style={{
+              padding: "6px 14px", borderRadius: 20, border: `1.5px solid ${selectedHsk === n ? HSK_COLORS[n] : "rgba(255,255,255,.1)"}`,
+              background: selectedHsk === n ? `rgba(${n===1?'93,138,110':n===2?'96,180,208':n===3?'212,160,23':n===4?'232,160,96':n===5?'231,76,60':'192,57,43'},.15)` : "transparent",
+              color: selectedHsk === n ? HSK_COLORS[n] : "rgba(255,255,255,.4)",
+              fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", transition: "all .18s"
+            }}>
+            HSK {n}
+          </button>
+        ))}
+
+        {/* Поиск */}
+        <div style={{ marginLeft: "auto", position: "relative", flexShrink: 0 }}>
+          <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,.3)" }} />
+          <input
+            ref={searchRef}
+            value={searchQ}
+            onChange={e => setSearchQ(e.target.value)}
+            placeholder="Поиск по пиньинь..."
+            style={{ background: "rgba(255,255,255,.05)", border: "1.5px solid rgba(255,255,255,.1)", borderRadius: 20, padding: "7px 14px 7px 30px", color: "white", fontSize: 13, outline: "none", width: 180, fontFamily: "'DM Sans',sans-serif" }}
+          />
+          {/* Результаты поиска */}
+          {searchResults.length > 0 && (
+            <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, background: "#1C1C1C", border: "1px solid rgba(255,255,255,.1)", borderRadius: 14, minWidth: 220, zIndex: 100, overflow: "hidden", boxShadow: "0 12px 40px rgba(0,0,0,.6)" }}>
+              {searchResults.map(w => (
+                <div key={w.id}
+                  onClick={() => addWord(w)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", cursor: "pointer", transition: "background .15s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,.06)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <span style={{ fontFamily: "'Noto Serif SC',serif", fontSize: 22, color: "white", minWidth: 32 }}>{w.h}</span>
+                  <div>
+                    <div style={{ fontSize: 13, color: "#E74C3C", fontWeight: 600 }}>{w.p}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,.5)" }}>{w.ru}</div>
+                  </div>
+                  <span style={{ marginLeft: "auto", fontSize: 11, color: "#7EC89A", fontWeight: 700 }}>+ Добавить</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── КАТЕГОРИИ выбранного HSK ── */}
+      {hskCats.length > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 16px 10px", overflowX: "auto", scrollbarWidth: "none" }}>
+          <span style={{ fontSize: 10, letterSpacing: 2, color: "rgba(255,255,255,.2)", textTransform: "uppercase", whiteSpace: "nowrap", marginRight: 4 }}>Категории</span>
+          {hskCats.map(cat => {
+            const isOn = !!selectedCats.find(c => c.id === cat.id);
+            return (
+              <button key={cat.id}
+                onClick={() => toggleCat(cat)}
+                style={{
+                  padding: "5px 12px", borderRadius: 20, whiteSpace: "nowrap",
+                  border: `1.5px solid ${isOn ? HSK_COLORS[selectedHsk] : "rgba(255,255,255,.08)"}`,
+                  background: isOn ? `rgba(${selectedHsk===1?'93,138,110':selectedHsk===2?'96,180,208':selectedHsk===3?'212,160,23':selectedHsk===4?'232,160,96':selectedHsk===5?'231,76,60':'192,57,43'},.12)` : "rgba(255,255,255,.03)",
+                  color: isOn ? "white" : "rgba(255,255,255,.4)",
+                  fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "all .15s"
+                }}>
+                {cat.nameRu}
+                {cat.nameZh && <span style={{ marginLeft: 5, fontFamily: "'Noto Serif SC',serif", opacity: .6 }}>{cat.nameZh}</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── ВЫБРАННЫЕ ТЕГИ (категории + слова) ── */}
+      {(selectedCats.length > 0 || selectedWords.length > 0) && (
+        <div style={{ padding: "6px 16px 10px", borderTop: "1px solid rgba(255,255,255,.05)" }}>
+          <div style={{ fontSize: 10, letterSpacing: 2, color: "rgba(255,255,255,.2)", textTransform: "uppercase", marginBottom: 6 }}>Активный набор</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {selectedCats.map(cat => (
+              <span key={cat.id} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 20, background: "rgba(212,160,23,.12)", border: "1px solid rgba(212,160,23,.25)", color: "#D4A017", fontSize: 12, fontWeight: 600 }}>
+                HSK{cat.hsk} / {cat.nameRu}
+                <button onClick={() => removeCat(cat.id)} style={{ background: "none", border: "none", color: "#D4A017", cursor: "pointer", padding: 0, lineHeight: 1, opacity: .7 }}><X size={12} /></button>
+              </span>
+            ))}
+            {selectedWords.map(w => (
+              <span key={w.id} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 20, background: "rgba(192,57,43,.1)", border: "1px solid rgba(192,57,43,.25)", color: "#E87060", fontSize: 12, fontWeight: 600 }}>
+                <span style={{ fontFamily: "'Noto Serif SC',serif" }}>{w.h}</span> — {w.p}
+                <button onClick={() => removeWord(w.id)} style={{ background: "none", border: "none", color: "#E87060", cursor: "pointer", padding: 0, lineHeight: 1, opacity: .7 }}><X size={12} /></button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════
+// MAIN PAGE
 // ══════════════════════════════════════════
 export default function TrainerPage() {
+  // ── Твои хуки — не тронуты ──
   const { words, loading } = useWords();
   const { user } = useAuth();
 
@@ -332,13 +459,34 @@ export default function TrainerPage() {
   const [streak, setStreak] = useState(0);
   const [finished, setFinished] = useState(false);
   const [sessionKey, setSessionKey] = useState(0);
-
-  // ── ТОЛЬКО ДЛЯ МОБАЙЛА: открыть/закрыть сайдбар ──
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // ── НОВЫЕ СТЕЙТЫ фильтрации ──
+  const [selectedHsk, setSelectedHsk] = useState(1);
+  const [selectedCats, setSelectedCats] = useState([]);   // выбранные категории
+  const [selectedWords, setSelectedWords] = useState([]); // слова из поиска
 
   const isLocked = !user && mode !== 'quiz';
 
-  // ── Вся логика твоя — не тронута ──
+  // ── Вычисляем активную базу слов ──
+  const activeVocab = (() => {
+    // 1. Если есть выбранные слова через поиск — только они
+    if (selectedWords.length > 0) return selectedWords;
+
+    // 2. Если выбраны категории — слова этих категорий
+    if (selectedCats.length > 0) {
+      const catIds = selectedCats.map(c => c.id);
+      return words.filter(w => catIds.includes(w.categoryId));
+    }
+
+    // 3. Иначе — все слова выбранного HSK уровня
+    return words.filter(w => Number(w.hsk) === selectedHsk);
+  })();
+
+  // Если после фильтрации мало слов — берём весь HSK уровень как запасной
+  const vocab = activeVocab.length >= 2 ? activeVocab : words.filter(w => Number(w.hsk) === selectedHsk);
+
+  // ── Твоя логика — не тронута ──
   function handleScore(isCorrect) {
     if (isCorrect) { setCorrect(p => p + 1); setStreak(p => p + 1); }
     else           { setWrong(p => p + 1);   setStreak(0); }
@@ -350,6 +498,9 @@ export default function TrainerPage() {
   }
 
   function finishSession() { setFinished(true); }
+
+  // Сброс сессии при смене фильтра
+  useEffect(() => { restart(); }, [selectedHsk, selectedCats, selectedWords]);
 
   if (loading) {
     return (
@@ -380,26 +531,29 @@ export default function TrainerPage() {
     <div className={styles.root}>
       <TopNav streak={streak} />
 
-      {/* ── МОБАЙЛ: нижняя панель режимов ── */}
+      {/* ── НОВЫЙ FILTER BAR (HSK + Категории + Поиск) ── */}
+      <FilterBar
+        allWords={words}
+        selectedHsk={selectedHsk}
+        setSelectedHsk={setSelectedHsk}
+        selectedCats={selectedCats}
+        setSelectedCats={setSelectedCats}
+        selectedWords={selectedWords}
+        setSelectedWords={setSelectedWords}
+      />
+
+      {/* ── МОБАЙЛ: нижняя панель режимов — не тронуто ── */}
       <div className={styles.mobileModebar}>
         {MODES.map(m => (
-          <button
-            key={m.id}
-            onClick={() => { setMode(m.id); restart(); }}
-            className={styles.mobileModeBtn}
-            style={{
-              background: mode === m.id ? 'rgba(192,57,43,.15)' : 'transparent',
-              borderTop: `2px solid ${mode === m.id ? '#C0392B' : 'transparent'}`,
-              color: mode === m.id ? 'white' : 'rgba(255,255,255,.4)',
-            }}
-          >
+          <button key={m.id} onClick={() => { setMode(m.id); restart(); }} className={styles.mobileModeBtn}
+            style={{ background: mode === m.id ? 'rgba(192,57,43,.15)' : 'transparent', borderTop: `2px solid ${mode === m.id ? '#C0392B' : 'transparent'}`, color: mode === m.id ? 'white' : 'rgba(255,255,255,.4)' }}>
             <span style={{ fontSize: 18 }}>{m.icon}</span>
             <span style={{ fontSize: 10, marginTop: 2 }}>{m.name}</span>
           </button>
         ))}
       </div>
 
-      {/* ── МОБАЙЛ: мини score-бар под топнавом ── */}
+      {/* ── МОБАЙЛ: мини score-бар — не тронуто ── */}
       <div className={styles.mobileScorebar}>
         <span style={{ color: '#7EC89A', fontWeight: 700 }}>✓ {correct}</span>
         <span style={{ color: 'rgba(255,255,255,.3)', fontSize: 12 }}>|</span>
@@ -411,19 +565,16 @@ export default function TrainerPage() {
         </span>
       </div>
 
-      {/* ── ОСНОВНАЯ СЕТКА ── */}
+      {/* ── ОСНОВНАЯ СЕТКА — не тронуто ── */}
       <div className={styles.trainerGrid}>
 
-        {/* ЛЕВЫЙ САЙДБАР — скрыт на мобайле */}
+        {/* ЛЕВЫЙ САЙДБАР */}
         <aside className={styles.sidebar}>
           <div style={{ fontSize: 10, letterSpacing: 2, color: "rgba(255,255,255,.25)", padding: "0 16px", marginBottom: 8 }}>РЕЖИМ</div>
           {MODES.map(m => (
-            <button
-              key={m.id}
-              onClick={() => { setMode(m.id); restart(); }}
+            <button key={m.id} onClick={() => { setMode(m.id); restart(); }}
               className={`${styles.modeBtn} ${mode === m.id ? styles.active : ""}`}
-              style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 16px", border: "none", background: "transparent", color: "rgba(255,255,255,.45)", width: "100%", textAlign: "left", cursor: "pointer" }}
-            >
+              style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 16px", border: "none", background: "transparent", color: "rgba(255,255,255,.45)", width: "100%", textAlign: "left", cursor: "pointer" }}>
               {m.icon}
               <div>
                 <div style={{ fontWeight: 600, fontSize: 13 }}>{m.name}</div>
@@ -431,6 +582,15 @@ export default function TrainerPage() {
               </div>
             </button>
           ))}
+
+          {/* Показываем что в базе */}
+          <div style={{ margin: "16px 16px 0", padding: "12px", background: "rgba(255,255,255,.03)", borderRadius: 12, border: "1px solid rgba(255,255,255,.06)" }}>
+            <div style={{ fontSize: 10, letterSpacing: 1.5, color: "rgba(255,255,255,.25)", textTransform: "uppercase", marginBottom: 6 }}>База сейчас</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: HSK_COLORS[selectedHsk] }}>{vocab.length}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,.35)", marginTop: 2 }}>
+              {selectedWords.length > 0 ? "Выбранные слова" : selectedCats.length > 0 ? "По категориям" : `HSK ${selectedHsk} — все`}
+            </div>
+          </div>
         </aside>
 
         {/* ЦЕНТР */}
@@ -446,17 +606,17 @@ export default function TrainerPage() {
               </div>
             ) : (
               <div key={`${mode}-${sessionKey}`}>
-                {mode === "quiz"      && <QuizMode      vocab={words} onScore={handleScore} onFinish={finishSession} />}
-                {mode === "flashcard" && <FlashcardMode vocab={words} onScore={handleScore} onFinish={finishSession} />}
+                {mode === "quiz"      && <QuizMode      vocab={vocab} onScore={handleScore} onFinish={finishSession} />}
+                {mode === "flashcard" && <FlashcardMode vocab={vocab} onScore={handleScore} onFinish={finishSession} />}
                 {mode === "dialogue"  && <DialogueMode               onScore={handleScore} onFinish={finishSession} />}
-                {mode === "type"      && <TypeMode      vocab={words} onScore={handleScore} onFinish={finishSession} />}
-                {mode === "draw"      && <DrawMode      vocab={words} onScore={handleScore} onFinish={finishSession} />}
+                {mode === "type"      && <TypeMode      vocab={vocab} onScore={handleScore} onFinish={finishSession} />}
+                {mode === "draw"      && <DrawMode      vocab={vocab} onScore={handleScore} onFinish={finishSession} />}
               </div>
             )}
           </div>
         </main>
 
-        {/* ПРАВЫЙ САЙДБАР — скрыт на мобайле */}
+        {/* ПРАВЫЙ САЙДБАР — не тронуто */}
         <aside className={styles.rightSidebar}>
           <div style={{ fontSize: 10, letterSpacing: 2, color: "rgba(255,255,255,.25)", marginBottom: 10 }}>СЧЁТ СЕССИИ</div>
           <div style={{ background: "rgba(255,255,255,.04)", borderRadius: 14, padding: "10px 16px", display: 'flex', gap: 10 }}>
@@ -467,6 +627,16 @@ export default function TrainerPage() {
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ color: '#E87060', fontSize: 22, fontWeight: 900 }}>{wrong}</div>
               <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>ОШИБКИ</div>
+            </div>
+          </div>
+
+          {/* Активный фильтр в правом сайдбаре */}
+          <div style={{ marginTop: 16, padding: "12px", background: "rgba(255,255,255,.03)", borderRadius: 12, border: "1px solid rgba(255,255,255,.06)" }}>
+            <div style={{ fontSize: 10, letterSpacing: 1.5, color: "rgba(255,255,255,.25)", textTransform: "uppercase", marginBottom: 8 }}>Фильтр</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,.5)" }}>
+              <span style={{ color: HSK_COLORS[selectedHsk], fontWeight: 700 }}>HSK {selectedHsk}</span>
+              {selectedCats.length > 0 && <span style={{ color: "#D4A017" }}> · {selectedCats.length} кат.</span>}
+              {selectedWords.length > 0 && <span style={{ color: "#E87060" }}> · {selectedWords.length} слов</span>}
             </div>
           </div>
         </aside>

@@ -23,7 +23,7 @@ body {
   background: var(--ink);
   color: var(--white);
   overflow-x: hidden;
-  cursor: none; /* Убираем стандартный курсор для кастомного */
+  cursor: auto; /* Убираем стандартный курсор для кастомного */
 }
 
 a { text-decoration: none; }

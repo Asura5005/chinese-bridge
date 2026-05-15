@@ -12,7 +12,7 @@ export default function RootLayout({ children }) {
     <html lang="ru">
       <body>
         <AuthProvider>
-          <Cursor />
+          {/* <Cursor /> */}
           {children}
         </AuthProvider>
       </body>
