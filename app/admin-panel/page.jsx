@@ -7,7 +7,7 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot, getDocs } from 'firebase/firestore';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Уникальный glow-цвет на каждую иконку
+//  Уникальный glow-цвет на каждую иконку — не тронуто
 // ─────────────────────────────────────────────────────────────────────────────
 const ICON_COLORS = {
   "🗣️":"#60A5FA","💬":"#818CF8","👋":"#34D399","🤝":"#6EE7B7",
@@ -57,7 +57,7 @@ const ICON_COLORS = {
 const getGlow = (e) => ICON_COLORS[e] || "#818CF8";
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Группы и иконки
+//  Группы и иконки — не тронуто
 // ─────────────────────────────────────────────────────────────────────────────
 const ICON_GROUPS = [
   { id: null,      label: "Все"     },
@@ -92,7 +92,7 @@ const ICONS = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  IconPicker — минималистичный, свайпабельный
+//  IconPicker — не тронуто
 // ─────────────────────────────────────────────────────────────────────────────
 function IconPicker({ value, onChange }) {
   const [activeGroup, setActiveGroup] = useState(null);
@@ -106,155 +106,60 @@ function IconPicker({ value, onChange }) {
     search ? ic.e.includes(search) : (activeGroup ? ic.g === activeGroup : true)
   );
 
-  // drag-scroll для мыши (тач — нативный overflow-x)
-  const onMD = e => {
-    dragging.current   = true;
-    startX.current     = e.pageX - tabsRef.current.offsetLeft;
-    scrollLeft.current = tabsRef.current.scrollLeft;
-  };
-  const onMM = e => {
-    if (!dragging.current) return;
-    e.preventDefault();
-    tabsRef.current.scrollLeft = scrollLeft.current - (e.pageX - tabsRef.current.offsetLeft - startX.current) * 1.4;
-  };
-  const onMU = () => { dragging.current = false; };
+  const onMD = e => { dragging.current=true; startX.current=e.pageX-tabsRef.current.offsetLeft; scrollLeft.current=tabsRef.current.scrollLeft; };
+  const onMM = e => { if(!dragging.current)return; e.preventDefault(); tabsRef.current.scrollLeft=scrollLeft.current-(e.pageX-tabsRef.current.offsetLeft-startX.current)*1.4; };
+  const onMU = () => { dragging.current=false; };
 
   const glow = getGlow(value);
 
   return (
-    <div style={{ borderRadius:14, overflow:"hidden", border:"1px solid rgba(255,255,255,0.07)", background:"rgba(0,0,0,0.2)" }}>
-
-      {/* ── Хедер: превью + поиск ── */}
-      <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
-        {/* Превью */}
-        <div style={{
-          width:44, height:44, borderRadius:12, flexShrink:0,
-          background:`${glow}10`, border:`1px solid ${glow}28`,
-          boxShadow:`0 0 16px ${glow}30`,
-          display:"flex", alignItems:"center", justifyContent:"center", fontSize:24,
-          transition:"all 0.2s",
-        }}>
-          <span style={{ filter:`drop-shadow(0 0 7px ${glow}cc)`, transition:"filter 0.2s" }}>{value}</span>
+    <div style={{borderRadius:14,overflow:"hidden",border:"1px solid rgba(255,255,255,0.07)",background:"rgba(0,0,0,0.2)"}}>
+      <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+        <div style={{width:44,height:44,borderRadius:12,flexShrink:0,background:`${glow}10`,border:`1px solid ${glow}28`,boxShadow:`0 0 16px ${glow}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,transition:"all 0.2s"}}>
+          <span style={{filter:`drop-shadow(0 0 7px ${glow}cc)`,transition:"filter 0.2s"}}>{value}</span>
         </div>
-
-        {/* Поиск */}
-        <div style={{
-          flex:1, display:"flex", alignItems:"center", gap:8,
-          background:"rgba(255,255,255,0.04)", borderRadius:9,
-          padding:"8px 10px", border:"1px solid rgba(255,255,255,0.06)",
-        }}>
-          <Search size={13} style={{ color:"rgba(255,255,255,0.22)", flexShrink:0 }}/>
-          <input
-            value={search}
-            onChange={e => { setSearch(e.target.value); setActiveGroup(null); }}
-            placeholder="Поиск иконки..."
-            style={{ flex:1, background:"none", border:"none", outline:"none", color:"white", fontSize:13, fontFamily:"'DM Sans',sans-serif" }}
-          />
-          {search && (
-            <button onClick={()=>setSearch("")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.28)", cursor:"pointer", padding:0, lineHeight:1, fontSize:13 }}>✕</button>
-          )}
+        <div style={{flex:1,display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.04)",borderRadius:9,padding:"8px 10px",border:"1px solid rgba(255,255,255,0.06)"}}>
+          <Search size={13} style={{color:"rgba(255,255,255,0.22)",flexShrink:0}}/>
+          <input value={search} onChange={e=>{setSearch(e.target.value);setActiveGroup(null);}} placeholder="Поиск иконки..." style={{flex:1,background:"none",border:"none",outline:"none",color:"white",fontSize:13,fontFamily:"'DM Sans',sans-serif"}}/>
+          {search&&<button onClick={()=>setSearch("")} style={{background:"none",border:"none",color:"rgba(255,255,255,0.28)",cursor:"pointer",padding:0,lineHeight:1,fontSize:13}}>✕</button>}
         </div>
       </div>
-
-      {/* ── Свайпабельные табы ── */}
-      {!search && (
-        <div
-          ref={tabsRef}
-          onMouseDown={onMD} onMouseMove={onMM} onMouseUp={onMU} onMouseLeave={onMU}
-          style={{
-            display:"flex", gap:5, padding:"8px 12px",
-            overflowX:"auto", WebkitOverflowScrolling:"touch",
-            scrollbarWidth:"none", borderBottom:"1px solid rgba(255,255,255,0.04)",
-            cursor:"grab", userSelect:"none",
-          }}
-        >
+      {!search&&(
+        <div ref={tabsRef} onMouseDown={onMD} onMouseMove={onMM} onMouseUp={onMU} onMouseLeave={onMU}
+          style={{display:"flex",gap:5,padding:"8px 12px",overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",borderBottom:"1px solid rgba(255,255,255,0.04)",cursor:"grab",userSelect:"none"}}>
           <style>{`div::-webkit-scrollbar{display:none}`}</style>
-          {ICON_GROUPS.map(g => {
-            const active = activeGroup === g.id;
-            return (
-              <button
-                key={g.label} type="button"
-                onClick={() => setActiveGroup(g.id)}
-                style={{
-                  flexShrink:0, padding:"4px 13px", borderRadius:20,
-                  border: active ? "1px solid rgba(255,255,255,0.18)" : "1px solid rgba(255,255,255,0.06)",
-                  background: active ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)",
-                  color: active ? "white" : "rgba(255,255,255,0.35)",
-                  fontSize:12, fontWeight: active ? 600 : 400,
-                  cursor:"pointer", transition:"all 0.15s",
-                  fontFamily:"'DM Sans',sans-serif", letterSpacing:"0.01em",
-                }}
-              >{g.label}</button>
+          {ICON_GROUPS.map(g=>{
+            const active=activeGroup===g.id;
+            return(
+              <button key={g.label} type="button" onClick={()=>setActiveGroup(g.id)}
+                style={{flexShrink:0,padding:"4px 13px",borderRadius:20,border:active?"1px solid rgba(255,255,255,0.18)":"1px solid rgba(255,255,255,0.06)",background:active?"rgba(255,255,255,0.1)":"rgba(255,255,255,0.03)",color:active?"white":"rgba(255,255,255,0.35)",fontSize:12,fontWeight:active?600:400,cursor:"pointer",transition:"all 0.15s",fontFamily:"'DM Sans',sans-serif",letterSpacing:"0.01em"}}>
+                {g.label}
+              </button>
             );
           })}
         </div>
       )}
-
-      {/* ── Сетка иконок ── */}
-      <div style={{
-        display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(42px,1fr))",
-        gap:4, padding:"10px 12px 12px",
-        maxHeight:200, overflowY:"auto",
-        scrollbarWidth:"thin", scrollbarColor:"rgba(255,255,255,0.07) transparent",
-      }}>
-        {filtered.map((ic, i) => {
-          const g  = getGlow(ic.e);
-          const sel = ic.e === value;
-          return (
-            <button
-              key={i} type="button"
-              onClick={() => onChange(ic.e)}
-              style={{
-                aspectRatio:"1", borderRadius:10,
-                border: sel ? `1px solid ${g}45` : "1px solid transparent",
-                background: sel ? `${g}12` : "rgba(255,255,255,0.03)",
-                display:"flex", alignItems:"center", justifyContent:"center",
-                fontSize:20, cursor:"pointer", transition:"all 0.14s",
-                position:"relative",
-                boxShadow: sel ? `0 0 10px ${g}28` : "none",
-              }}
-              onMouseEnter={e => {
-                if (sel) return;
-                e.currentTarget.style.background = `${g}12`;
-                e.currentTarget.style.border     = `1px solid ${g}38`;
-                e.currentTarget.style.transform  = "scale(1.12) translateY(-1px)";
-                e.currentTarget.querySelector("span").style.filter = `drop-shadow(0 0 6px ${g}dd)`;
-              }}
-              onMouseLeave={e => {
-                if (sel) return;
-                e.currentTarget.style.background = "rgba(255,255,255,0.03)";
-                e.currentTarget.style.border     = "1px solid transparent";
-                e.currentTarget.style.transform  = "none";
-                e.currentTarget.querySelector("span").style.filter = "none";
-              }}
-            >
-              <span style={{ filter: sel ? `drop-shadow(0 0 7px ${g}ee)` : "none", transition:"filter 0.14s", lineHeight:1 }}>
-                {ic.e}
-              </span>
-              {sel && (
-                <span style={{
-                  position:"absolute", bottom:-3, right:-3,
-                  width:13, height:13, borderRadius:"50%",
-                  background:g, fontSize:7, fontWeight:900, color:"#000",
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                  zIndex:2, boxShadow:`0 0 5px ${g}`,
-                }}>✓</span>
-              )}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(42px,1fr))",gap:4,padding:"10px 12px 12px",maxHeight:200,overflowY:"auto",scrollbarWidth:"thin",scrollbarColor:"rgba(255,255,255,0.07) transparent"}}>
+        {filtered.map((ic,i)=>{
+          const g=getGlow(ic.e); const sel=ic.e===value;
+          return(
+            <button key={i} type="button" onClick={()=>onChange(ic.e)}
+              style={{aspectRatio:"1",borderRadius:10,border:sel?`1px solid ${g}45`:"1px solid transparent",background:sel?`${g}12`:"rgba(255,255,255,0.03)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer",transition:"all 0.14s",position:"relative",boxShadow:sel?`0 0 10px ${g}28`:"none"}}
+              onMouseEnter={e=>{if(sel)return;e.currentTarget.style.background=`${g}12`;e.currentTarget.style.border=`1px solid ${g}38`;e.currentTarget.style.transform="scale(1.12) translateY(-1px)";e.currentTarget.querySelector("span").style.filter=`drop-shadow(0 0 6px ${g}dd)`;}}
+              onMouseLeave={e=>{if(sel)return;e.currentTarget.style.background="rgba(255,255,255,0.03)";e.currentTarget.style.border="1px solid transparent";e.currentTarget.style.transform="none";e.currentTarget.querySelector("span").style.filter="none";}}>
+              <span style={{filter:sel?`drop-shadow(0 0 7px ${g}ee)`:"none",transition:"filter 0.14s",lineHeight:1}}>{ic.e}</span>
+              {sel&&<span style={{position:"absolute",bottom:-3,right:-3,width:13,height:13,borderRadius:"50%",background:g,fontSize:7,fontWeight:900,color:"#000",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2,boxShadow:`0 0 5px ${g}`}}>✓</span>}
             </button>
           );
         })}
-        {filtered.length === 0 && (
-          <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"24px 0", color:"rgba(255,255,255,0.22)", fontSize:13 }}>
-            Ничего не найдено
-          </div>
-        )}
+        {filtered.length===0&&<div style={{gridColumn:"1/-1",textAlign:"center",padding:"24px 0",color:"rgba(255,255,255,0.22)",fontSize:13}}>Ничего не найдено</div>}
       </div>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  ГЛАВНЫЙ КОМПОНЕНТ  AdminPanel
+//  ГЛАВНЫЙ КОМПОНЕНТ
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminPanel() {
   const [tab, setTab]               = useState('dictionary');
@@ -263,8 +168,16 @@ export default function AdminPanel() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData]     = useState({ h:"", p:"", ru:"", uz:"", en:"", hsk:1, categoryId:"" });
-  const [formOpen, setFormOpen]     = useState(false);
+
+  // ── hsk:"" = плейсхолдер "Выберите уровень" ──
+  const [formData, setFormData] = useState({ h:"", p:"", ru:"", uz:"", en:"", hsk:"", categoryId:"" });
+  const [formOpen, setFormOpen] = useState(false);
+
+  // ── Ошибки формы ──
+  const [formErrors, setFormErrors] = useState({});
+  // ── Предупреждение о дубликате ──
+  const [dupWarning, setDupWarning] = useState(null); // null | "h" | "p"
+
   const [catForm, setCatForm]       = useState({ hsk:1, nameRu:"", nameZh:"", nameUz:"", nameEn:"", pinyin:"", icon:"📁" });
   const [catFormOpen, setCatFormOpen] = useState(false);
   const [catSubmitting, setCatSubmitting] = useState(false);
@@ -272,6 +185,7 @@ export default function AdminPanel() {
   const filteredCategories = categories.filter(c => Number(c.hsk) === Number(formData.hsk));
   const HSK_COLORS = ["","#7EC89A","#60B4D0","#D4A017","#E8A060","#E74C3C","#C0392B"];
 
+  // ── Загрузка слов ──
   useEffect(() => {
     const q = query(collection(db,"words"), orderBy("createdAt","desc"));
     const unsub = onSnapshot(q, snap => {
@@ -281,12 +195,14 @@ export default function AdminPanel() {
     return ()=>unsub();
   }, []);
 
+  // ── Загрузка категорий ──
   useEffect(() => {
     const q = query(collection(db,"categories"), orderBy("createdAt","desc"));
     const unsub = onSnapshot(q, snap => setCategories(snap.docs.map(d=>({id:d.id,...d.data()}))));
     return ()=>unsub();
   }, []);
 
+  // ── Загрузка студентов ──
   useEffect(() => {
     if (tab==='students') {
       getDocs(query(collection(db,"users"),orderBy("joinDate","desc")))
@@ -294,13 +210,43 @@ export default function AdminPanel() {
     }
   }, [tab]);
 
+  // ── Проверка дубликата при изменении иероглифа или пиньинь ──
+  useEffect(() => {
+    if (!formData.h && !formData.p) { setDupWarning(null); return; }
+    const dupH = formData.h && words.find(w => w.h === formData.h.trim());
+    const dupP = formData.p && words.find(w => w.p === formData.p.trim());
+    if (dupH) setDupWarning("h");
+    else if (dupP) setDupWarning("p");
+    else setDupWarning(null);
+  }, [formData.h, formData.p, words]);
+
+  // ── Валидация формы слова ──
+  const validateWord = () => {
+    const e = {};
+    if (!formData.hsk)        e.hsk = "Выберите уровень HSK";
+    if (!formData.h.trim())   e.h   = "Введите иероглиф";
+    if (!formData.p.trim())   e.p   = "Введите пиньинь";
+    if (!formData.ru.trim())  e.ru  = "Введите перевод на русский";
+    if (!formData.categoryId) e.categoryId = "Выберите категорию";
+    setFormErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  // ── Добавить слово ──
   const handleAddWord = async e => {
     e.preventDefault();
-    if (!formData.h||!formData.p||!formData.ru) return;
+    if (!validateWord()) return;
+    if (dupWarning) return; // блокируем если дубликат
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db,"words"), {...formData, hsk:Number(formData.hsk), categoryId:formData.categoryId||null, createdAt:Date.now()});
-      setFormData({h:"",p:"",ru:"",uz:"",en:"",hsk:1,categoryId:""});
+      await addDoc(collection(db,"words"), {
+        ...formData,
+        hsk: Number(formData.hsk),
+        categoryId: formData.categoryId || null,
+        createdAt: Date.now()
+      });
+      setFormData({h:"",p:"",ru:"",uz:"",en:"",hsk:"",categoryId:""});
+      setFormErrors({});
       setFormOpen(false);
     } finally { setIsSubmitting(false); }
   };
@@ -324,6 +270,21 @@ export default function AdminPanel() {
     if (confirm("Удалить категорию? Слова в ней останутся.")) await deleteDoc(doc(db,"categories",id));
   };
 
+  // ── Сортировка слов: HSK 1→6, внутри по категории ──
+  const sortedWords = [...words].sort((a, b) => {
+    if (Number(a.hsk) !== Number(b.hsk)) return Number(a.hsk) - Number(b.hsk);
+    // Слова без категории — в конец группы HSK
+    if (!a.categoryId && b.categoryId) return 1;
+    if (a.categoryId && !b.categoryId) return -1;
+    if (a.categoryId && b.categoryId && a.categoryId !== b.categoryId) {
+      return a.categoryId.localeCompare(b.categoryId);
+    }
+    return 0;
+  });
+
+  // ── Студенты: сортировка по HSK уровню ──
+  const sortedStudents = [...students].sort((a, b) => Number(a.hskLevel || 1) - Number(b.hskLevel || 1));
+
   const inp = {
     width:"100%", padding:"14px 16px", background:"rgba(255,255,255,0.04)",
     border:"1.5px solid rgba(255,255,255,0.08)", borderRadius:"14px",
@@ -334,6 +295,7 @@ export default function AdminPanel() {
     display:"block", fontSize:"11px", fontWeight:"600", letterSpacing:"1px",
     color:"rgba(255,255,255,0.4)", textTransform:"uppercase", marginBottom:"8px"
   };
+  const errStyle = { fontSize:11, color:"#E87060", marginTop:5, paddingLeft:2 };
 
   return (
     <div className={styles.db}>
@@ -394,80 +356,172 @@ export default function AdminPanel() {
               <div className={`${styles.card} ${styles.animUp}`} style={{padding:"28px 24px",position:"sticky",top:"80px",maxWidth:480,margin:"0 auto"}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
                   <div className={styles.cardLabel} style={{fontSize:"12px"}}>Добавить слово</div>
-                  <button onClick={()=>setFormOpen(false)} style={{background:'none',border:'none',color:'rgba(255,255,255,0.4)',cursor:'pointer',fontSize:22,lineHeight:1}}>✕</button>
+                  <button onClick={()=>{setFormOpen(false);setFormErrors({});setDupWarning(null);}} style={{background:'none',border:'none',color:'rgba(255,255,255,0.4)',cursor:'pointer',fontSize:22,lineHeight:1}}>✕</button>
                 </div>
+
                 <form onSubmit={handleAddWord} style={{display:"flex",flexDirection:"column",gap:18}}>
-                  <div><label style={lbl}>Иероглиф (字)*</label><input value={formData.h} onChange={e=>setFormData({...formData,h:e.target.value})} placeholder="学习" style={{...inp,fontFamily:"'Noto Serif SC',serif",fontSize:"20px"}}/></div>
-                  <div><label style={lbl}>Пиньинь*</label><input value={formData.p} onChange={e=>setFormData({...formData,p:e.target.value})} placeholder="xuéxí" style={{...inp,color:"#E74C3C",fontWeight:"500"}}/></div>
-                  <div><label style={lbl}>Перевод (RU)*</label><input value={formData.ru} onChange={e=>setFormData({...formData,ru:e.target.value})} placeholder="учиться" style={inp}/></div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-                    <div><label style={lbl}>UZ</label><input value={formData.uz} onChange={e=>setFormData({...formData,uz:e.target.value})} placeholder="o'rganmoq" style={inp}/></div>
-                    <div><label style={lbl}>EN</label><input value={formData.en} onChange={e=>setFormData({...formData,en:e.target.value})} placeholder="to study" style={inp}/></div>
-                  </div>
+
+                  {/* Иероглиф */}
                   <div>
-                    <label style={lbl}>Уровень HSK</label>
-                    <select value={formData.hsk} onChange={e=>setFormData({...formData,hsk:e.target.value,categoryId:""})} style={{...inp,cursor:"pointer"}}>
-                      {[1,2,3,4,5,6].map(l=><option key={l} value={l} style={{background:'#181818'}}>HSK {l}</option>)}
-                    </select>
+                    <label style={lbl}>Иероглиф (字)*</label>
+                    <input value={formData.h} onChange={e=>setFormData({...formData,h:e.target.value})} placeholder="学习"
+                      style={{...inp,fontFamily:"'Noto Serif SC',serif",fontSize:"20px",borderColor: dupWarning==="h"?"#E87060":formErrors.h?"#E87060":"rgba(255,255,255,0.08)"}}/>
+                    {dupWarning==="h" && <div style={errStyle}>⚠ Этот иероглиф уже есть в базе</div>}
+                    {!dupWarning && formErrors.h && <div style={errStyle}>⚠ {formErrors.h}</div>}
                   </div>
+
+                  {/* Пиньинь */}
+                  <div>
+                    <label style={lbl}>Пиньинь*</label>
+                    <input value={formData.p} onChange={e=>setFormData({...formData,p:e.target.value})} placeholder="xuéxí"
+                      style={{...inp,color:"#E74C3C",fontWeight:"500",borderColor: dupWarning==="p"?"#E87060":formErrors.p?"#E87060":"rgba(255,255,255,0.08)"}}/>
+                    {dupWarning==="p" && <div style={errStyle}>⚠ Такой пиньинь уже есть в базе</div>}
+                    {!dupWarning && formErrors.p && <div style={errStyle}>⚠ {formErrors.p}</div>}
+                  </div>
+
+                  {/* Русский */}
+                  <div>
+                    <label style={lbl}>Перевод (RU)*</label>
+                    <input value={formData.ru} onChange={e=>setFormData({...formData,ru:e.target.value})} placeholder="учиться"
+                      style={{...inp,borderColor:formErrors.ru?"#E87060":"rgba(255,255,255,0.08)"}}/>
+                    {formErrors.ru && <div style={errStyle}>⚠ {formErrors.ru}</div>}
+                  </div>
+
+                  {/* UZ + EN (необязательные) */}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+                    <div>
+                      <label style={lbl}>UZ <span style={{color:"rgba(255,255,255,0.2)",textTransform:"none",letterSpacing:0}}>(необяз.)</span></label>
+                      <input value={formData.uz} onChange={e=>setFormData({...formData,uz:e.target.value})} placeholder="o'rganmoq" style={inp}/>
+                    </div>
+                    <div>
+                      <label style={lbl}>EN <span style={{color:"rgba(255,255,255,0.2)",textTransform:"none",letterSpacing:0}}>(необяз.)</span></label>
+                      <input value={formData.en} onChange={e=>setFormData({...formData,en:e.target.value})} placeholder="to study" style={inp}/>
+                    </div>
+                  </div>
+
+                  {/* HSK — плейсхолдер "Выберите уровень" */}
+                  <div>
+                    <label style={lbl}>Уровень HSK*</label>
+                    <select value={formData.hsk}
+                      onChange={e=>setFormData({...formData,hsk:e.target.value,categoryId:""})}
+                      style={{...inp,cursor:"pointer",borderColor:formErrors.hsk?"#E87060":"rgba(255,255,255,0.08)",color:formData.hsk?"white":"rgba(255,255,255,0.3)"}}>
+                      <option value="" disabled style={{background:'#181818',color:"rgba(255,255,255,0.3)"}}>— Выберите уровень —</option>
+                      {[1,2,3,4,5,6].map(l=><option key={l} value={l} style={{background:'#181818',color:"white"}}>HSK {l}</option>)}
+                    </select>
+                    {formErrors.hsk && <div style={errStyle}>⚠ {formErrors.hsk}</div>}
+                  </div>
+
+                  {/* Категория — обязательная */}
                   <div>
                     <label style={lbl}>
-                      Категория (HSK {formData.hsk})
-                      {filteredCategories.length===0&&<span style={{color:"#E87060",marginLeft:8,textTransform:"none",letterSpacing:0}}>— нет категорий</span>}
+                      Категория*
+                      {formData.hsk && filteredCategories.length===0 &&
+                        <span style={{color:"#E87060",marginLeft:8,textTransform:"none",letterSpacing:0}}>— нет категорий для HSK {formData.hsk}</span>}
+                      {!formData.hsk &&
+                        <span style={{color:"rgba(255,255,255,0.3)",marginLeft:8,textTransform:"none",letterSpacing:0}}>— сначала выберите HSK</span>}
                     </label>
-                    <select value={formData.categoryId} onChange={e=>setFormData({...formData,categoryId:e.target.value})}
-                      disabled={filteredCategories.length===0}
-                      style={{...inp,cursor:filteredCategories.length===0?"not-allowed":"pointer",opacity:filteredCategories.length===0?0.4:1}}>
-                      <option value="" style={{background:'#181818'}}>— Без категории —</option>
+                    <select value={formData.categoryId}
+                      onChange={e=>setFormData({...formData,categoryId:e.target.value})}
+                      disabled={!formData.hsk || filteredCategories.length===0}
+                      style={{...inp,cursor:(!formData.hsk||filteredCategories.length===0)?"not-allowed":"pointer",opacity:(!formData.hsk||filteredCategories.length===0)?0.4:1,borderColor:formErrors.categoryId?"#E87060":"rgba(255,255,255,0.08)"}}>
+                      <option value="" style={{background:'#181818'}}>— Выберите категорию —</option>
                       {filteredCategories.map(c=><option key={c.id} value={c.id} style={{background:'#181818'}}>{c.icon||"📁"} {c.nameRu}</option>)}
                     </select>
+                    {formErrors.categoryId && <div style={errStyle}>⚠ {formErrors.categoryId}</div>}
+                    {filteredCategories.length===0 && formData.hsk && (
+                      <div style={{marginTop:8,fontSize:12,color:"rgba(255,255,255,0.3)"}}>Сначала создай категорию во вкладке «Категории»</div>
+                    )}
                   </div>
-                  <button type="submit" disabled={isSubmitting} className={styles.primaryBtn} style={{justifyContent:"center",padding:"16px",marginTop:"6px",fontSize:"15px",borderRadius:"14px"}}>
+
+                  {/* Кнопка — заблокирована если дубликат */}
+                  <button type="submit" disabled={isSubmitting||!!dupWarning}
+                    className={styles.primaryBtn}
+                    style={{justifyContent:"center",padding:"16px",marginTop:"6px",fontSize:"15px",borderRadius:"14px",opacity:(isSubmitting||dupWarning)?0.5:1,cursor:(isSubmitting||dupWarning)?"not-allowed":"pointer"}}>
                     {isSubmitting?<Loader2 size={20} className="animate-spin"/>:<Plus size={20}/>} Добавить в базу
                   </button>
                 </form>
               </div>
             </aside>
 
+            {/* Список слов — сортировка по HSK → категория */}
             <main>
               <div className={`${styles.card} ${styles.animUp}`} style={{animationDelay:"0.1s",padding:"24px",minHeight:"600px"}}>
-                <div className={styles.cardLabel} style={{fontSize:"12px",marginBottom:"20px"}}>Облачная база слов</div>
+                <div className={styles.cardLabel} style={{fontSize:"12px",marginBottom:"20px"}}>
+                  Облачная база слов — сортировка по HSK
+                </div>
                 {loading?(
                   <div style={{padding:"60px 0",textAlign:"center",color:"rgba(255,255,255,0.4)"}}>Загрузка...</div>
                 ):(
-                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                    {words.map(w=>{
-                      const wCat=categories.find(c=>c.id===w.categoryId);
+                  <>
+                    {/* Группировка: HSK → Категория → Слова */}
+                    {[1,2,3,4,5,6].map(hskNum=>{
+                      const hskWords = sortedWords.filter(w=>Number(w.hsk)===hskNum);
+                      if(!hskWords.length) return null;
+                      const hc = HSK_COLORS[hskNum];
+                      const hr = ["","93,138,110","96,180,208","212,160,23","232,160,96","231,76,60","192,57,43"][hskNum];
+
+                      // Категории этого HSK у которых есть слова
+                      const hskCats = categories.filter(c=>Number(c.hsk)===hskNum);
+                      const wordsWithCat   = hskWords.filter(w=>w.categoryId);
+                      const wordsWithoutCat= hskWords.filter(w=>!w.categoryId);
+
                       return(
-                        <div key={w.id} className="wr" style={{background:"rgba(255,255,255,0.03)",padding:"14px 18px",borderRadius:"16px",border:"1px solid rgba(255,255,255,0.04)",transition:"background 0.2s"}}
-                          onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}
-                          onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
-                          <div className="wh" style={{fontFamily:"'Noto Serif SC',serif",color:"white"}}>{w.h}</div>
-                          <div>
-                            <div style={{color:"#E74C3C",fontWeight:600,letterSpacing:"0.5px"}}>{w.p}</div>
-                            <div style={{color:"white",fontSize:"14px"}}>{w.ru}</div>
-                            <div className="wu" style={{fontSize:"12px",color:"rgba(255,255,255,0.4)",marginTop:2}}>{w.uz} <span style={{margin:"0 4px",opacity:0.5}}>|</span> {w.en}</div>
-                            {wCat&&<div style={{fontSize:"11px",color:"rgba(255,255,255,0.3)",marginTop:2}}>{wCat.icon||"📁"} {wCat.nameRu}</div>}
+                        <div key={hskNum} style={{marginBottom:28}}>
+                          {/* HSK заголовок */}
+                          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,paddingBottom:8,borderBottom:`1px solid rgba(${hr},0.2)`}}>
+                            <span style={{fontSize:"13px",fontWeight:700,padding:"5px 14px",borderRadius:"20px",background:`rgba(${hr},0.15)`,color:hc,border:`1px solid ${hc}40`}}>HSK {hskNum}</span>
+                            <span style={{fontSize:"12px",color:"rgba(255,255,255,0.3)"}}>{hskWords.length} слов</span>
                           </div>
-                          <div className="whc">
-                            <span style={{fontSize:"11px",fontWeight:700,padding:"6px 12px",borderRadius:"20px",background:"rgba(212,160,23,0.1)",border:"1px solid rgba(212,160,23,0.2)",color:"#D4A017"}}>HSK {w.hsk}</span>
-                          </div>
-                          <div className="wa" style={{display:"flex",gap:10,justifySelf:"flex-end"}}>
-                            <button style={{background:"none",border:"none",color:"rgba(255,255,255,0.3)",cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.color="white"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.3)"}><Edit2 size={17}/></button>
-                            <button onClick={()=>handleDelete(w.id)} style={{background:"none",border:"none",color:"rgba(232,112,96,0.6)",cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.color="#E87060"} onMouseLeave={e=>e.currentTarget.style.color="rgba(232,112,96,0.6)"}><Trash2 size={17}/></button>
-                          </div>
+
+                          {/* По категориям */}
+                          {hskCats.map(cat=>{
+                            const catWords = wordsWithCat.filter(w=>w.categoryId===cat.id);
+                            if(!catWords.length) return null;
+                            const ig = getGlow(cat.icon||"📁");
+                            return(
+                              <div key={cat.id} style={{marginBottom:16}}>
+                                {/* Категория подзаголовок */}
+                                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,paddingLeft:4}}>
+                                  <span style={{filter:`drop-shadow(0 0 4px ${ig}88)`,fontSize:16}}>{cat.icon||"📁"}</span>
+                                  <span style={{fontSize:"12px",fontWeight:600,color:"rgba(255,255,255,0.5)"}}>{cat.nameRu}</span>
+                                  <span style={{fontSize:"11px",color:"rgba(255,255,255,0.2)"}}>{catWords.length} сл.</span>
+                                </div>
+                                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                                  {catWords.map(w=>(
+                                    <WordRow key={w.id} w={w} onDelete={handleDelete} categories={categories}/>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+
+                          {/* Слова без категории */}
+                          {wordsWithoutCat.length>0&&(
+                            <div style={{marginBottom:16}}>
+                              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,paddingLeft:4}}>
+                                <span style={{fontSize:16}}>📌</span>
+                                <span style={{fontSize:"12px",fontWeight:600,color:"rgba(255,255,255,0.35)"}}>Без категории</span>
+                                <span style={{fontSize:"11px",color:"rgba(255,255,255,0.2)"}}>{wordsWithoutCat.length} сл.</span>
+                              </div>
+                              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                                {wordsWithoutCat.map(w=>(
+                                  <WordRow key={w.id} w={w} onDelete={handleDelete} categories={categories}/>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
                     {words.length===0&&<div style={{padding:"60px 0",textAlign:"center",color:"rgba(255,255,255,0.4)"}}>База пуста. Добавь слова!</div>}
-                  </div>
+                  </>
                 )}
               </div>
             </main>
           </div>
         )}
 
-        {/* ══ КАТЕГОРИИ ══ */}
+        {/* ══ КАТЕГОРИИ — не тронуто ══ */}
         {tab==='categories'&&(
           <div className="cg">
             <aside className={`ca${catFormOpen?' open':''}`}>
@@ -492,20 +546,16 @@ export default function AdminPanel() {
                     <div><label style={lbl}>UZ</label><input value={catForm.nameUz} onChange={e=>setCatForm({...catForm,nameUz:e.target.value})} placeholder="Salomlashish" style={inp}/></div>
                     <div><label style={lbl}>EN</label><input value={catForm.nameEn} onChange={e=>setCatForm({...catForm,nameEn:e.target.value})} placeholder="Greetings" style={inp}/></div>
                   </div>
-
-                  {/* ── ICON PICKER ── */}
                   <div>
                     <label style={lbl}>Иконка</label>
                     <IconPicker value={catForm.icon} onChange={icon=>setCatForm({...catForm,icon})}/>
                   </div>
-
                   <button type="submit" disabled={catSubmitting} className={styles.primaryBtn} style={{justifyContent:"center",padding:"16px",marginTop:"6px",fontSize:"15px",borderRadius:"14px"}}>
                     {catSubmitting?<Loader2 size={20} className="animate-spin"/>:<Plus size={20}/>} Создать категорию
                   </button>
                 </form>
               </div>
             </aside>
-
             <main>
               <div className={`${styles.card} ${styles.animUp}`} style={{animationDelay:"0.1s",padding:"24px",minHeight:"600px"}}>
                 <div className={styles.cardLabel} style={{fontSize:"12px",marginBottom:"20px"}}>Все категории ({categories.length})</div>
@@ -524,17 +574,10 @@ export default function AdminPanel() {
                         {hskCats.map(cat=>{
                           const ig=getGlow(cat.icon||"📁");
                           return(
-                            <div key={cat.id}
-                              style={{background:"rgba(255,255,255,0.03)",padding:"14px 18px",borderRadius:"14px",border:"1px solid rgba(255,255,255,0.04)",display:"flex",alignItems:"center",gap:16,transition:"background 0.2s"}}
+                            <div key={cat.id} style={{background:"rgba(255,255,255,0.03)",padding:"14px 18px",borderRadius:"14px",border:"1px solid rgba(255,255,255,0.04)",display:"flex",alignItems:"center",gap:16,transition:"background 0.2s"}}
                               onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}
                               onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
-                              {/* Иконка с уникальным glow */}
-                              <div style={{
-                                width:44,height:44,borderRadius:13,flexShrink:0,
-                                background:`${ig}10`,border:`1px solid ${ig}30`,
-                                boxShadow:`0 0 14px ${ig}28,0 0 4px ${ig}14`,
-                                display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,
-                              }}>
+                              <div style={{width:44,height:44,borderRadius:13,flexShrink:0,background:`${ig}10`,border:`1px solid ${ig}30`,boxShadow:`0 0 14px ${ig}28,0 0 4px ${ig}14`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>
                                 <span style={{filter:`drop-shadow(0 0 6px ${ig}cc)`}}>{cat.icon||"📁"}</span>
                               </div>
                               <div style={{flex:1}}>
@@ -545,9 +588,7 @@ export default function AdminPanel() {
                                   {cat.nameUz&&<span>🇺🇿 {cat.nameUz}</span>}
                                   {cat.nameEn&&<span>🇬🇧 {cat.nameEn}</span>}
                                 </div>
-                                <div style={{fontSize:11,color:"rgba(255,255,255,0.25)",marginTop:3}}>
-                                  {words.filter(w=>w.categoryId===cat.id).length} слов
-                                </div>
+                                <div style={{fontSize:11,color:"rgba(255,255,255,0.25)",marginTop:3}}>{words.filter(w=>w.categoryId===cat.id).length} слов</div>
                               </div>
                               <button onClick={()=>handleDeleteCategory(cat.id)} style={{background:"none",border:"none",color:"rgba(232,112,96,0.5)",cursor:"pointer",transition:"color 0.2s",flexShrink:0}}
                                 onMouseEnter={e=>e.currentTarget.style.color="#E87060"}
@@ -573,40 +614,79 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* ══ СТУДЕНТЫ ══ */}
+        {/* ══ СТУДЕНТЫ — сортировка по HSK ══ */}
         {tab==='students'&&(
           <div className={`${styles.card} ${styles.animUp}`} style={{padding:"24px"}}>
-            <div className={styles.cardLabel} style={{fontSize:"12px",marginBottom:"20px"}}>Список студентов ({students.length})</div>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {students.map((st,i)=>(
-                <div key={i} className="sr" style={{background:"rgba(255,255,255,0.03)",padding:"14px 18px",borderRadius:"16px",border:"1px solid rgba(255,255,255,0.04)"}}>
-                  {st.photoURL
-                    ?<img src={st.photoURL} style={{width:48,height:48,borderRadius:'50%',border:st.role==='admin'?'2px solid #D4A017':'none'}} alt="ava"/>
-                    :<div style={{width:48,height:48,borderRadius:'50%',background:'linear-gradient(135deg,#C0392B,#D4A017)',display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"bold",fontSize:"18px",color:"white"}}>{st.name?.charAt(0)}</div>
-                  }
-                  <div>
-                    <div style={{color:"white",fontWeight:"bold",fontSize:"15px",marginBottom:"2px"}}>
-                      {st.name}
-                      {st.role==='admin'&&<span style={{fontSize:"10px",padding:"2px 8px",borderRadius:"12px",background:"rgba(212,160,23,0.15)",color:"#D4A017",marginLeft:"8px",verticalAlign:"middle"}}>АДМИН</span>}
-                    </div>
-                    <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>{st.email}</div>
-                    <div className="sx" style={{fontSize:"12px",color:"rgba(255,255,255,0.35)",marginTop:2}}>Рег.: {new Date(st.joinDate).toLocaleDateString('ru-RU')}</div>
+            <div className={styles.cardLabel} style={{fontSize:"12px",marginBottom:"20px"}}>Студенты по уровню HSK ({students.length})</div>
+            {[1,2,3,4,5,6].map(hskNum=>{
+              const hskStudents = sortedStudents.filter(s=>Number(s.hskLevel||1)===hskNum);
+              if(!hskStudents.length) return null;
+              const hc=HSK_COLORS[hskNum];
+              const hr=["","93,138,110","96,180,208","212,160,23","232,160,96","231,76,60","192,57,43"][hskNum];
+              return(
+                <div key={hskNum} style={{marginBottom:24}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,paddingBottom:8,borderBottom:`1px solid rgba(${hr},0.15)`}}>
+                    <span style={{fontSize:"12px",fontWeight:700,padding:"4px 12px",borderRadius:"20px",background:`rgba(${hr},0.15)`,color:hc,border:`1px solid ${hc}40`}}>HSK {hskNum}</span>
+                    <span style={{fontSize:"12px",color:"rgba(255,255,255,0.3)"}}>{hskStudents.length} студентов</span>
                   </div>
-                  <div className="sx" style={{color:"white",fontWeight:"bold",fontSize:"14px"}}>
-                    <span style={{color:"#D4A017",marginRight:"4px"}}>⭐</span>{st.xp?.toLocaleString()} XP
-                  </div>
-                  <div>
-                    <span style={{fontSize:"12px",fontWeight:700,padding:"6px 10px",borderRadius:"20px",background:"rgba(126,200,154,0.1)",border:"1px solid rgba(126,200,154,0.2)",color:"#7EC89A"}}>HSK {st.hskLevel}</span>
+                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                    {hskStudents.map((st,i)=>(
+                      <div key={i} className="sr" style={{background:"rgba(255,255,255,0.03)",padding:"14px 18px",borderRadius:"16px",border:"1px solid rgba(255,255,255,0.04)"}}>
+                        {st.photoURL
+                          ?<img src={st.photoURL} style={{width:48,height:48,borderRadius:'50%',border:st.role==='admin'?'2px solid #D4A017':'none'}} alt="ava"/>
+                          :<div style={{width:48,height:48,borderRadius:'50%',background:'linear-gradient(135deg,#C0392B,#D4A017)',display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"bold",fontSize:"18px",color:"white"}}>{st.name?.charAt(0)}</div>
+                        }
+                        <div>
+                          <div style={{color:"white",fontWeight:"bold",fontSize:"15px",marginBottom:"2px"}}>
+                            {st.name}
+                            {st.role==='admin'&&<span style={{fontSize:"10px",padding:"2px 8px",borderRadius:"12px",background:"rgba(212,160,23,0.15)",color:"#D4A017",marginLeft:"8px",verticalAlign:"middle"}}>АДМИН</span>}
+                          </div>
+                          <div style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>{st.email}</div>
+                          <div className="sx" style={{fontSize:"12px",color:"rgba(255,255,255,0.35)",marginTop:2}}>Рег.: {new Date(st.joinDate).toLocaleDateString('ru-RU')}</div>
+                        </div>
+                        <div className="sx" style={{color:"white",fontWeight:"bold",fontSize:"14px"}}>
+                          <span style={{color:"#D4A017",marginRight:"4px"}}>⭐</span>{st.xp?.toLocaleString()} XP
+                        </div>
+                        <div>
+                          <span style={{fontSize:"12px",fontWeight:700,padding:"6px 10px",borderRadius:"20px",background:`rgba(${hr},0.1)`,border:`1px solid rgba(${hr},0.2)`,color:hc}}>HSK {st.hskLevel}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
+            {students.length===0&&<div style={{padding:"60px 0",textAlign:"center",color:"rgba(255,255,255,0.4)"}}>Студентов пока нет</div>}
           </div>
         )}
       </div>
 
       {tab==='dictionary'&&<button className="af" onClick={()=>setFormOpen(true)}><Plus size={26}/></button>}
       {tab==='categories'&&<button className="cf" onClick={()=>setCatFormOpen(true)}><Plus size={26}/></button>}
+    </div>
+  );
+}
+
+// ── Отдельный компонент строки слова (чтобы не дублировать код) ──
+function WordRow({ w, onDelete, categories }) {
+  const wCat = categories.find(c=>c.id===w.categoryId);
+  return(
+    <div className="wr" style={{background:"rgba(255,255,255,0.03)",padding:"12px 16px",borderRadius:"14px",border:"1px solid rgba(255,255,255,0.04)",transition:"background 0.2s"}}
+      onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.06)"}
+      onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+      <div className="wh" style={{fontFamily:"'Noto Serif SC',serif",color:"white"}}>{w.h}</div>
+      <div>
+        <div style={{color:"#E74C3C",fontWeight:600,letterSpacing:"0.5px",fontSize:14}}>{w.p}</div>
+        <div style={{color:"white",fontSize:"14px"}}>{w.ru}</div>
+        <div className="wu" style={{fontSize:"12px",color:"rgba(255,255,255,0.4)",marginTop:2}}>{w.uz}{w.uz&&w.en&&<span style={{margin:"0 4px",opacity:0.5}}>|</span>}{w.en}</div>
+      </div>
+      <div className="whc">
+        <span style={{fontSize:"11px",fontWeight:700,padding:"6px 12px",borderRadius:"20px",background:"rgba(212,160,23,0.1)",border:"1px solid rgba(212,160,23,0.2)",color:"#D4A017"}}>HSK {w.hsk}</span>
+      </div>
+      <div className="wa" style={{display:"flex",gap:10,justifySelf:"flex-end"}}>
+        <button style={{background:"none",border:"none",color:"rgba(255,255,255,0.3)",cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.color="white"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.3)"}><Edit2 size={17}/></button>
+        <button onClick={()=>onDelete(w.id)} style={{background:"none",border:"none",color:"rgba(232,112,96,0.6)",cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.color="#E87060"} onMouseLeave={e=>e.currentTarget.style.color="rgba(232,112,96,0.6)"}><Trash2 size={17}/></button>
+      </div>
     </div>
   );
 }
