@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from "react";
 import Link from 'next/link';
-import { Target, Layers, MessageSquare, PenTool, Edit3, Loader2, Search, X, List, Volume2, ChevronRight, BookOpen } from 'lucide-react';
+import { Target, Layers, MessageSquare, PenTool, Edit3, Loader2, Search, X, List, Volume2, BookOpen } from 'lucide-react';
 import HanziDraw from '@/components/Trainer/HanziDraw';
 import TopNav from '@/components/UI/TopNav';
 import styles from '@/styles/Trainer.module.css';
@@ -51,8 +51,21 @@ const speak = (text) => {
 const AudioBtn = ({ text }) => {
   const [playing, setPlaying] = useState(false);
   return (
-    <button onClick={(e) => { e.stopPropagation(); setPlaying(true); speak(text); setTimeout(() => setPlaying(false), 1200); }}
-      style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, padding: "7px 16px", borderRadius: 20, border: `1.5px solid ${playing ? '#C0392B' : "rgba(0,0,0,.15)"}`, background: playing ? "rgba(192,57,43,.07)" : "transparent", color: playing ? '#C0392B' : "rgba(0,0,0,.45)", fontSize: 13, cursor: "pointer", transition: "all .2s" }}>
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setPlaying(true);
+        speak(text);
+        setTimeout(() => setPlaying(false), 1200);
+      }}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12,
+        padding: "7px 16px", borderRadius: 20,
+        border: `1.5px solid ${playing ? '#C0392B' : "rgba(0,0,0,.15)"}`,
+        background: playing ? "rgba(192,57,43,.07)" : "transparent",
+        color: playing ? '#C0392B' : "rgba(0,0,0,.45)",
+        fontSize: 13, cursor: "pointer", transition: "all .2s"
+      }}>
       🔊 {playing ? "Играет..." : "Прослушать"}
     </button>
   );
@@ -60,7 +73,11 @@ const AudioBtn = ({ text }) => {
 
 const ProgressBar = ({ value }) => (
   <div style={{ height: 3, background: "rgba(255,255,255,.06)", borderRadius: 3, marginBottom: 20, overflow: "hidden" }}>
-    <div style={{ height: "100%", width: `${value}%`, background: `linear-gradient(90deg,#C0392B,#D4A017)`, transition: "width .4s ease" }} />
+    <div style={{
+      height: "100%", width: `${value}%`,
+      background: `linear-gradient(90deg,#C0392B,#D4A017)`,
+      transition: "width .4s ease"
+    }} />
   </div>
 );
 
@@ -94,7 +111,7 @@ function WordListMode({ vocab, onGoToDraw }) {
           border-radius: 18px;
           padding: 16px 20px;
           display: grid;
-          grid-template-columns: 64px 1fr auto;
+          grid-template-columns: auto 1fr auto;
           align-items: center;
           gap: 16px;
           transition: all 0.18s;
@@ -107,10 +124,13 @@ function WordListMode({ vocab, onGoToDraw }) {
         }
         .wl-hz {
           font-family: 'Noto Serif SC', serif;
-          font-size: 40px;
+          font-size: 36px;
           line-height: 1;
           color: white;
-          text-align: center;
+          white-space: nowrap;
+          writing-mode: horizontal-tb;
+          text-orientation: mixed;
+          letter-spacing: 4px;
           text-shadow: 0 0 20px rgba(192,57,43,0.3);
         }
         .wl-btn {
@@ -153,8 +173,8 @@ function WordListMode({ vocab, onGoToDraw }) {
           opacity: 1;
         }
         @media (max-width: 600px) {
-          .wl-card { grid-template-columns: 52px 1fr auto; gap: 12px; padding: 14px 16px; }
-          .wl-hz { font-size: 32px; }
+          .wl-card { gap: 10px; padding: 12px 14px; }
+          .wl-hz { font-size: 26px; letter-spacing: 2px; }
         }
       `}</style>
 
@@ -163,20 +183,27 @@ function WordListMode({ vocab, onGoToDraw }) {
         <div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "white" }}>Список слов</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
-            {vocab.length} слов · нажми на слово чтобы открыть перевод · ✏️ для рисования
+            {vocab.length} слов · нажми чтобы раскрыть · ✏️ для рисования
           </div>
         </div>
-        {/* Поиск внутри списка */}
         <div style={{ position: "relative", flexShrink: 0 }}>
           <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.3)" }} />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Фильтр..."
-            style={{ background: "rgba(255,255,255,0.05)", border: "1.5px solid rgba(255,255,255,0.1)", borderRadius: 14, padding: "8px 14px 8px 30px", color: "white", fontSize: 13, outline: "none", width: 140, fontFamily: "'DM Sans',sans-serif" }}
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1.5px solid rgba(255,255,255,0.1)",
+              borderRadius: 14, padding: "8px 14px 8px 30px",
+              color: "white", fontSize: 13, outline: "none", width: 140,
+              fontFamily: "'DM Sans',sans-serif"
+            }}
           />
           {search && (
-            <button onClick={() => setSearch("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", padding: 0 }}>
+            <button
+              onClick={() => setSearch("")}
+              style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", padding: 0 }}>
               <X size={13} />
             </button>
           )}
@@ -187,19 +214,17 @@ function WordListMode({ vocab, onGoToDraw }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {filtered.map((w, i) => {
           const isOpen = !!flipped[w.id];
-          const canDraw = w.h.length === 1;
           return (
             <div key={w.id} style={{ animationDelay: `${i * 0.02}s` }}>
               <div className="wl-card" onClick={() => toggleFlip(w.id)}>
 
-                {/* Иероглиф */}
+                {/* Иероглифы — горизонтально слева направо */}
                 <div className="wl-hz">{w.h}</div>
 
                 {/* Инфо */}
                 <div>
                   <div style={{ fontSize: 15, color: "#E74C3C", fontWeight: 600, letterSpacing: "0.5px" }}>{w.p}</div>
                   <div style={{ fontSize: 14, color: "white", marginTop: 2 }}>{w.ru}</div>
-                  {/* Скрытый блок UZ/EN */}
                   <div className={`wl-meaning${isOpen ? ' open' : ''}`}>
                     <div style={{ display: "flex", gap: 10, marginTop: 6, flexWrap: "wrap" }}>
                       {w.uz && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>🇺🇿 {w.uz}</span>}
@@ -210,7 +235,6 @@ function WordListMode({ vocab, onGoToDraw }) {
 
                 {/* Кнопки */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }} onClick={e => e.stopPropagation()}>
-                  {/* Аудио */}
                   <button
                     className="wl-btn"
                     onClick={() => playAudio(w)}
@@ -219,14 +243,10 @@ function WordListMode({ vocab, onGoToDraw }) {
                   >
                     <Volume2 size={15} />
                   </button>
-
-                  {/* Рисование — только для одиночных иероглифов */}
                   <button
                     className="wl-draw-btn"
                     onClick={() => onGoToDraw(w)}
-                    title={canDraw ? "Практиковать написание" : "Только для одиночных иероглифов"}
-                    style={!canDraw ? { opacity: 0.25, cursor: "not-allowed" } : {}}
-                    disabled={!canDraw}
+                    title="Практиковать написание"
                   >
                     <PenTool size={15} />
                   </button>
@@ -244,11 +264,10 @@ function WordListMode({ vocab, onGoToDraw }) {
         )}
       </div>
 
-      {/* Подсказка снизу */}
       {vocab.length > 0 && (
         <div style={{ marginTop: 20, padding: "12px 16px", background: "rgba(192,57,43,0.06)", border: "1px solid rgba(192,57,43,0.15)", borderRadius: 14, fontSize: 12, color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", gap: 8 }}>
           <PenTool size={13} style={{ color: "#E87060", flexShrink: 0 }} />
-          Кнопка <span style={{ color: "#E87060" }}>✏️</span> доступна только для одиночных иероглифов. Многосложные слова можно учить через Тест или Карточки.
+          Кнопка <span style={{ color: "#E87060" }}>✏️</span> открывает режим рисования — для многосложных слов иероглифы рисуются по очереди.
         </div>
       )}
     </div>
@@ -256,7 +275,7 @@ function WordListMode({ vocab, onGoToDraw }) {
 }
 
 // ══════════════════════════════════════════
-// ОСТАЛЬНЫЕ РЕЖИМЫ — не тронуты
+// QUIZ
 // ══════════════════════════════════════════
 function QuizMode({ vocab, onScore, onFinish }) {
   const items = useRef(shuffle(vocab).slice(0, 10));
@@ -314,15 +333,27 @@ function QuizMode({ vocab, onScore, onFinish }) {
             else if (opt === chosen) { bg = "rgba(192,57,43,.2)"; border = "#C0392B"; color = "#ffb3b3"; anim = styles.animWrong; }
           }
           return (
-            <button key={opt} disabled={answered} onClick={() => check(opt)} className={`${styles.optBtn} ${anim}`} style={{ background: bg, border: `2px solid ${border}`, color, borderRadius: 16, padding: "15px 12px", fontSize: 14, fontWeight: 500, cursor: answered ? "default" : "pointer" }}>{opt}</button>
+            <button key={opt} disabled={answered} onClick={() => check(opt)}
+              className={`${styles.optBtn} ${anim}`}
+              style={{ background: bg, border: `2px solid ${border}`, color, borderRadius: 16, padding: "15px 12px", fontSize: 14, fontWeight: 500, cursor: answered ? "default" : "pointer" }}>
+              {opt}
+            </button>
           );
         })}
       </div>
-      {answered && <button className={styles.nextBtn} onClick={next} style={{ width: "100%", padding: 15, borderRadius: 14, background: '#C0392B', color: "white", border: "none", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>Следующее →</button>}
+      {answered && (
+        <button className={styles.nextBtn} onClick={next}
+          style={{ width: "100%", padding: 15, borderRadius: 14, background: '#C0392B', color: "white", border: "none", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
+          Следующее →
+        </button>
+      )}
     </div>
   );
 }
 
+// ══════════════════════════════════════════
+// FLASHCARD
+// ══════════════════════════════════════════
 function FlashcardMode({ vocab, onScore, onFinish }) {
   const items = useRef(shuffle(vocab).slice(0, 10));
   const [idx, setIdx] = useState(0);
@@ -335,7 +366,9 @@ function FlashcardMode({ vocab, onScore, onFinish }) {
     setFlipped(false);
     setTimeout(() => setIdx(i => i + 1), 150);
   };
+
   if (!item) return null;
+
   return (
     <div className={styles.animFadeUp}>
       <ProgressBar value={(idx / items.current.length) * 100} />
@@ -357,24 +390,40 @@ function FlashcardMode({ vocab, onScore, onFinish }) {
       </div>
       {flipped && (
         <div className={styles.animFadeUp} style={{ display: "flex", gap: 12, marginBottom: 14 }}>
-          <button onClick={() => answer(false)} style={{ flex: 1, padding: 14, borderRadius: 14, border: `1.5px solid rgba(192,57,43,.3)`, background: "rgba(192,57,43,.12)", color: "#E87060", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>❌ Не знал</button>
-          <button onClick={() => answer(true)} style={{ flex: 1, padding: 14, borderRadius: 14, border: `1.5px solid rgba(93,138,110,.3)`, background: "rgba(93,138,110,.15)", color: "#7EC89A", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>✅ Знал!</button>
+          <button onClick={() => answer(false)}
+            style={{ flex: 1, padding: 14, borderRadius: 14, border: `1.5px solid rgba(192,57,43,.3)`, background: "rgba(192,57,43,.12)", color: "#E87060", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+            ❌ Не знал
+          </button>
+          <button onClick={() => answer(true)}
+            style={{ flex: 1, padding: 14, borderRadius: 14, border: `1.5px solid rgba(93,138,110,.3)`, background: "rgba(93,138,110,.15)", color: "#7EC89A", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+            ✅ Знал!
+          </button>
         </div>
       )}
     </div>
   );
 }
 
+// ══════════════════════════════════════════
+// DIALOGUE
+// ══════════════════════════════════════════
 function DialogueMode({ onScore, onFinish }) {
   const [dlIdx, setDlIdx] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [chosen, setChosen] = useState(null);
   const [options, setOptions] = useState([]);
   const d = DIALOGUES[dlIdx];
+
   useEffect(() => { if (d) setOptions(shuffle([d.correct, ...d.wrong])); }, [d]);
+
   if (!d) return null;
+
   const check = (opt) => { if (answered) return; setAnswered(true); setChosen(opt); onScore(opt === d.correct); };
-  const next = () => { if (dlIdx + 1 >= DIALOGUES.length) return onFinish(); setDlIdx(i => i + 1); setAnswered(false); setChosen(null); };
+  const next = () => {
+    if (dlIdx + 1 >= DIALOGUES.length) return onFinish();
+    setDlIdx(i => i + 1); setAnswered(false); setChosen(null);
+  };
+
   return (
     <div className={styles.animFadeUp}>
       <ProgressBar value={(dlIdx / DIALOGUES.length) * 100} />
@@ -382,7 +431,12 @@ function DialogueMode({ onScore, onFinish }) {
         <div style={{ fontSize: 11, letterSpacing: 2, color: "rgba(255,255,255,.3)", textTransform: "uppercase", marginBottom: 18 }}>💬 {d.title}</div>
         {d.lines.map((line, i) => (
           <div key={i} style={{ display: "flex", gap: 12, marginBottom: 14, alignItems: "flex-start" }}>
-            <div style={{ padding: "4px 10px", borderRadius: 8, fontSize: 13, fontWeight: 700, flexShrink: 0, marginTop: 2, ...(line.who === "A" ? { background: "rgba(192,57,43,.2)", color: "#E87060", border: "1px solid rgba(192,57,43,.3)" } : { background: "rgba(255,255,255,.06)", color: "rgba(255,255,255,.7)", border: "1px solid rgba(255,255,255,.1)" }) }}>{line.who}</div>
+            <div style={{
+              padding: "4px 10px", borderRadius: 8, fontSize: 13, fontWeight: 700, flexShrink: 0, marginTop: 2,
+              ...(line.who === "A"
+                ? { background: "rgba(192,57,43,.2)", color: "#E87060", border: "1px solid rgba(192,57,43,.3)" }
+                : { background: "rgba(255,255,255,.06)", color: "rgba(255,255,255,.7)", border: "1px solid rgba(255,255,255,.1)" })
+            }}>{line.who}</div>
             <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 14, padding: "12px 16px", cursor: 'pointer' }} onClick={() => speak(line.h)}>
               <div className={styles.hanzi} style={{ fontSize: 19, color: "white" }}>{line.h}</div>
               <div style={{ fontSize: 12, color: '#C0392B', letterSpacing: 1, marginTop: 4 }}>{line.p}</div>
@@ -399,14 +453,28 @@ function DialogueMode({ onScore, onFinish }) {
             if (opt === d.correct) { bg = "rgba(93,138,110,.2)"; border = "#5D8A6E"; color = "#b7e4c7"; anim = styles.animCorrect; }
             else if (opt === chosen) { bg = "rgba(192,57,43,.2)"; border = "#C0392B"; color = "#ffb3b3"; anim = styles.animWrong; }
           }
-          return <button key={opt} disabled={answered} onClick={() => check(opt)} className={`${styles.optBtn} ${anim}`} style={{ background: bg, border: `2px solid ${border}`, color, borderRadius: 14, padding: "14px 10px", fontSize: 14, fontWeight: 500, cursor: answered ? "default" : "pointer" }}>{opt}</button>;
+          return (
+            <button key={opt} disabled={answered} onClick={() => check(opt)}
+              className={`${styles.optBtn} ${anim}`}
+              style={{ background: bg, border: `2px solid ${border}`, color, borderRadius: 14, padding: "14px 10px", fontSize: 14, fontWeight: 500, cursor: answered ? "default" : "pointer" }}>
+              {opt}
+            </button>
+          );
         })}
       </div>
-      {answered && <button className={styles.nextBtn} onClick={next} style={{ width: "100%", padding: 15, borderRadius: 14, background: '#C0392B', color: "white", border: "none", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>Следующий →</button>}
+      {answered && (
+        <button className={styles.nextBtn} onClick={next}
+          style={{ width: "100%", padding: 15, borderRadius: 14, background: '#C0392B', color: "white", border: "none", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
+          Следующий →
+        </button>
+      )}
     </div>
   );
 }
 
+// ══════════════════════════════════════════
+// TYPE
+// ══════════════════════════════════════════
 function TypeMode({ vocab, onScore, onFinish }) {
   const items = useRef(shuffle(vocab).slice(0, 10));
   const [idx, setIdx] = useState(0);
@@ -415,8 +483,11 @@ function TypeMode({ vocab, onScore, onFinish }) {
   const [ok, setOk] = useState(false);
   const inputRef = useRef(null);
   const item = items.current[idx];
+
   useEffect(() => { if (inputRef.current && !answered) inputRef.current.focus(); }, [idx, answered]);
+
   if (!item) return null;
+
   const check = () => {
     if (answered || !input.trim()) return;
     const val = input.trim().toLowerCase();
@@ -424,6 +495,13 @@ function TypeMode({ vocab, onScore, onFinish }) {
     const isCorrect = ans.includes(val) || val.includes(ans.slice(0, 4));
     setAnswered(true); setOk(isCorrect); onScore(isCorrect);
   };
+
+  const next = () => {
+    setIdx(i => i + 1);
+    setInput(""); setAnswered(false);
+    if (idx + 1 >= items.current.length) onFinish();
+  };
+
   return (
     <div className={styles.animFadeUp}>
       <ProgressBar value={(idx / items.current.length) * 100} />
@@ -434,55 +512,158 @@ function TypeMode({ vocab, onScore, onFinish }) {
         <AudioBtn text={item.p} />
       </div>
       <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-        <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && check()} disabled={answered} placeholder="Введи перевод..."
-          style={{ flex: 1, background: "rgba(255,255,255,.05)", border: `1.5px solid ${answered ? (ok ? '#7EC89A' : '#C0392B') : "rgba(255,255,255,.12)"}`, color: "white", borderRadius: 14, padding: "14px 18px", fontSize: 17, outline: "none", transition: "border-color .2s" }} />
+        <input
+          ref={inputRef} value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && check()}
+          disabled={answered}
+          placeholder="Введи перевод..."
+          style={{
+            flex: 1, background: "rgba(255,255,255,.05)",
+            border: `1.5px solid ${answered ? (ok ? '#7EC89A' : '#C0392B') : "rgba(255,255,255,.12)"}`,
+            color: "white", borderRadius: 14, padding: "14px 18px", fontSize: 17, outline: "none", transition: "border-color .2s"
+          }}
+        />
         <button onClick={check} style={{ background: '#C0392B', border: "none", color: "white", borderRadius: 14, padding: "14px 24px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>OK</button>
       </div>
       {answered && (
-        <div className={styles.animFadeUp} style={{ borderRadius: 14, padding: "13px 18px", marginBottom: 12, display: "flex", alignItems: "center", gap: 10, fontSize: 14, fontWeight: 500, ...(ok ? { background: "rgba(93,138,110,.15)", border: `1px solid rgba(126,200,154,.3)`, color: "#b7e4c7" } : { background: "rgba(192,57,43,.15)", border: `1px solid rgba(192,57,43,.35)`, color: "#ffb3b3" }) }}>
+        <div className={styles.animFadeUp} style={{
+          borderRadius: 14, padding: "13px 18px", marginBottom: 12,
+          display: "flex", alignItems: "center", gap: 10, fontSize: 14, fontWeight: 500,
+          ...(ok
+            ? { background: "rgba(93,138,110,.15)", border: `1px solid rgba(126,200,154,.3)`, color: "#b7e4c7" }
+            : { background: "rgba(192,57,43,.15)", border: `1px solid rgba(192,57,43,.35)`, color: "#ffb3b3" })
+        }}>
           <span style={{ fontSize: 22 }}>{ok ? "✅" : "❌"}</span>
           <span>{ok ? "Верно!" : <span>Правильно: <b style={{ color: "white" }}>{item.ru}</b></span>}</span>
         </div>
       )}
-      {answered && <button className={styles.nextBtn} onClick={() => { setIdx(i => i + 1); setInput(""); setAnswered(false); if (idx + 1 >= items.current.length) onFinish(); }} style={{ width: "100%", padding: 15, borderRadius: 14, background: '#C0392B', color: "white", border: "none", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>Следующее →</button>}
+      {answered && (
+        <button className={styles.nextBtn} onClick={next}
+          style={{ width: "100%", padding: 15, borderRadius: 14, background: '#C0392B', color: "white", border: "none", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
+          Следующее →
+        </button>
+      )}
     </div>
   );
 }
 
+// ══════════════════════════════════════════
+// DRAW — пословный режим (все слова, иероглифы по очереди)
+// ══════════════════════════════════════════
 function DrawMode({ vocab, onScore, onFinish, focusWord }) {
-  const singleCharWords = vocab.filter(v => v.h.length === 1);
-  // Если пришли с конкретного слова из WordList — ставим его первым
+  // Все слова — без фильтра по длине, без slice
   const ordered = focusWord
-    ? [focusWord, ...singleCharWords.filter(v => v.id !== focusWord.id)]
-    : singleCharWords;
-  const items = useRef(shuffle(ordered).slice(0, 5));
+    ? [focusWord, ...vocab.filter(v => v.id !== focusWord.id)]
+    : vocab;
 
-  // Если пришли с focusWord — начинаем с него
-  const [idx, setIdx] = useState(0);
-  const item = items.current[idx];
+  const items = useRef(ordered);
 
-  if (!item) return <div style={{ textAlign: 'center', padding: 40, color: "rgba(255,255,255,0.4)" }}>Мало одиночных иероглифов в базе.</div>;
+  const [wordIdx, setWordIdx] = useState(0);
+  const [charIdx, setCharIdx] = useState(0);
 
-  const handleComplete = (isCorrect) => {
+  const word = items.current[wordIdx];
+  const chars = word ? word.h.split("") : [];
+  const currentChar = chars[charIdx];
+  const totalWords = items.current.length;
+
+  if (!word) return (
+    <div style={{ textAlign: 'center', padding: 40, color: "rgba(255,255,255,0.4)" }}>
+      Нет слов для практики.
+    </div>
+  );
+
+  const handleCharComplete = (isCorrect) => {
     onScore(isCorrect);
-    if (idx + 1 >= items.current.length) onFinish();
-    else setIdx(i => i + 1);
+    const isLastChar = charIdx + 1 >= chars.length;
+    if (isLastChar) {
+      const isLastWord = wordIdx + 1 >= items.current.length;
+      if (isLastWord) {
+        onFinish();
+      } else {
+        setWordIdx(i => i + 1);
+        setCharIdx(0);
+      }
+    } else {
+      setCharIdx(i => i + 1);
+    }
   };
 
   return (
     <div className={styles.animFadeUp}>
-      <ProgressBar value={(idx / items.current.length) * 100} />
-      {focusWord && idx === 0 && (
+      <ProgressBar value={(wordIdx / totalWords) * 100} />
+
+      {/* Подсказка при переходе из WordList */}
+      {focusWord && wordIdx === 0 && (
         <div style={{ marginBottom: 14, padding: "10px 14px", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 12, fontSize: 12, color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 8 }}>
           <BookOpen size={13} style={{ color: "#E87060" }} />
-          Перешёл из Списка слов · практикуешь <span style={{ color: "#E87060", fontFamily: "'Noto Serif SC',serif", fontSize: 16 }}>{focusWord.h}</span>
+          Перешёл из Списка слов · практикуешь&nbsp;
+          <span style={{ color: "#E87060", fontFamily: "'Noto Serif SC',serif", fontSize: 16 }}>{focusWord.h}</span>
         </div>
       )}
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
-        <h3 style={{ fontSize: 24, color: '#D4A017', marginBottom: 5 }}>{item.ru} / {item.p}</h3>
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>Нарисуй иероглиф по правильному порядку черт</p>
+
+      {/* Слово целиком с подсветкой текущего иероглифа */}
+      <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 18, padding: "16px 20px", marginBottom: 16 }}>
+        <div style={{ fontSize: 11, letterSpacing: 2, color: "rgba(255,255,255,.3)", textTransform: "uppercase", marginBottom: 12 }}>
+          Слово {wordIdx + 1} из {totalWords}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flexWrap: "wrap" }}>
+          {chars.map((ch, i) => {
+            const isDone = i < charIdx;
+            const isCurrent = i === charIdx;
+            return (
+              <div key={i} style={{ textAlign: "center", transition: "all .25s" }}>
+                <div style={{
+                  fontFamily: "'Noto Serif SC', serif",
+                  fontSize: 44,
+                  lineHeight: 1,
+                  padding: "8px 14px",
+                  borderRadius: 14,
+                  border: `2px solid ${isCurrent ? "#C0392B" : isDone ? "rgba(93,138,110,.4)" : "rgba(255,255,255,.08)"}`,
+                  background: isCurrent ? "rgba(192,57,43,.12)" : isDone ? "rgba(93,138,110,.1)" : "rgba(255,255,255,.03)",
+                  color: isDone ? "#7EC89A" : isCurrent ? "white" : "rgba(255,255,255,.3)",
+                  boxShadow: isCurrent ? "0 0 18px rgba(192,57,43,.25)" : "none",
+                  transition: "all .25s",
+                }}>
+                  {isDone ? "✓" : ch}
+                </div>
+                <div style={{
+                  fontSize: 11, marginTop: 5, letterSpacing: "0.5px",
+                  color: isCurrent ? "#C0392B" : isDone ? "rgba(93,138,110,.6)" : "rgba(255,255,255,.2)",
+                }}>
+                  {word.p.split(" ")[i] || ""}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Перевод справа */}
+          <div style={{ marginLeft: "auto", textAlign: "right", paddingTop: 6 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, color: "white" }}>{word.ru}</div>
+            {word.uz && <div style={{ fontSize: 12, color: "rgba(255,255,255,.3)", marginTop: 3 }}>🇺🇿 {word.uz}</div>}
+            {word.en && <div style={{ fontSize: 12, color: "rgba(255,255,255,.25)", marginTop: 2 }}>🇬🇧 {word.en}</div>}
+          </div>
+        </div>
       </div>
-      <HanziDraw key={item.h} character={item.h} onComplete={handleComplete} />
+
+      {/* Подпись над канвасом */}
+      <div style={{ textAlign: "center", marginBottom: 10 }}>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,.4)" }}>
+          Нарисуй иероглиф в правильном порядке черт
+          {chars.length > 1 && (
+            <span style={{ marginLeft: 8, color: "#C0392B", fontWeight: 600 }}>
+              {charIdx + 1} / {chars.length}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <HanziDraw
+        key={`${word.id}-${charIdx}`}
+        character={currentChar}
+        onComplete={handleCharComplete}
+      />
     </div>
   );
 }
@@ -505,7 +686,7 @@ const HSK_COLORS = {
 };
 
 // ══════════════════════════════════════════
-// FILTER BAR — исправлен z-index поиска
+// FILTER BAR
 // ══════════════════════════════════════════
 function FilterBar({ allWords, selectedHsk, setSelectedHsk, selectedCats, setSelectedCats, selectedWords, setSelectedWords }) {
   const [categories, setCategories] = useState([]);
@@ -523,12 +704,9 @@ function FilterBar({ allWords, selectedHsk, setSelectedHsk, selectedCats, setSel
     return () => unsub();
   }, []);
 
-  // Закрывать дропдаун при клике вне
   useEffect(() => {
     const handler = (e) => {
-      if (dropRef.current && !dropRef.current.contains(e.target)) {
-        setDropOpen(false);
-      }
+      if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -562,7 +740,7 @@ function FilterBar({ allWords, selectedHsk, setSelectedHsk, selectedCats, setSel
   return (
     <div style={{ borderBottom: "1px solid rgba(255,255,255,.07)", background: "#111" }}>
 
-      {/* ── HSK BAR ── */}
+      {/* HSK BAR */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", overflowX: "auto", scrollbarWidth: "none" }}>
         <span style={{ fontSize: 10, letterSpacing: 2, color: "rgba(255,255,255,.25)", textTransform: "uppercase", whiteSpace: "nowrap", marginRight: 4 }}>HSK</span>
         {[1, 2, 3, 4, 5, 6].map(n => (
@@ -581,7 +759,7 @@ function FilterBar({ allWords, selectedHsk, setSelectedHsk, selectedCats, setSel
           </button>
         ))}
 
-        {/* ── Поиск — FIX: portaled dropdown через position:fixed ── */}
+        {/* Поиск */}
         <div ref={dropRef} style={{ marginLeft: "auto", position: "relative", flexShrink: 0 }}>
           <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,.3)", pointerEvents: "none", zIndex: 1 }} />
           <input
@@ -605,17 +783,10 @@ function FilterBar({ allWords, selectedHsk, setSelectedHsk, selectedCats, setSel
             </button>
           )}
 
-          {/* ── DROPDOWN — z-index 9999 чтобы быть поверх всего ── */}
           {dropOpen && searchResults.length > 0 && (
             <div style={{
               position: "fixed",
-              top: (() => {
-                if (searchRef.current) {
-                  const rect = searchRef.current.getBoundingClientRect();
-                  return rect.bottom + 6;
-                }
-                return 100;
-              })(),
+              top: (() => { if (searchRef.current) { const r = searchRef.current.getBoundingClientRect(); return r.bottom + 6; } return 100; })(),
               right: 16,
               width: 260,
               background: "#1A1A1A",
@@ -623,20 +794,19 @@ function FilterBar({ allWords, selectedHsk, setSelectedHsk, selectedCats, setSel
               borderRadius: 16,
               zIndex: 9999,
               overflow: "hidden",
-              boxShadow: "0 20px 60px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.04)",
+              boxShadow: "0 20px 60px rgba(0,0,0,.8)",
             }}>
               <div style={{ padding: "8px 12px 6px", fontSize: 10, letterSpacing: 1.5, color: "rgba(255,255,255,.25)", textTransform: "uppercase", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
                 Найдено {searchResults.length} слов
               </div>
               {searchResults.map(w => (
-                <div key={w.id}
-                  onClick={() => addWord(w)}
+                <div key={w.id} onClick={() => addWord(w)}
                   style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", cursor: "pointer", transition: "background .15s" }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,.06)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  <span style={{ fontFamily: "'Noto Serif SC',serif", fontSize: 24, color: "white", minWidth: 34, textAlign: "center", textShadow: "0 0 12px rgba(192,57,43,.4)" }}>{w.h}</span>
+                  <span style={{ fontFamily: "'Noto Serif SC',serif", fontSize: 24, color: "white", minWidth: 34, textAlign: "center" }}>{w.h}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, color: "#E74C3C", fontWeight: 600, letterSpacing: "0.3px" }}>{w.p}</div>
+                    <div style={{ fontSize: 13, color: "#E74C3C", fontWeight: 600 }}>{w.p}</div>
                     <div style={{ fontSize: 12, color: "rgba(255,255,255,.45)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.ru}</div>
                   </div>
                   <span style={{ fontSize: 10, color: "#7EC89A", fontWeight: 700, background: "rgba(93,138,110,.12)", padding: "2px 7px", borderRadius: 8, flexShrink: 0 }}>+ добавить</span>
@@ -647,15 +817,14 @@ function FilterBar({ allWords, selectedHsk, setSelectedHsk, selectedCats, setSel
         </div>
       </div>
 
-      {/* ── КАТЕГОРИИ ── */}
+      {/* Категории */}
       {hskCats.length > 0 && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 16px 10px", overflowX: "auto", scrollbarWidth: "none" }}>
           <span style={{ fontSize: 10, letterSpacing: 2, color: "rgba(255,255,255,.2)", textTransform: "uppercase", whiteSpace: "nowrap", marginRight: 4 }}>Категории</span>
           {hskCats.map(cat => {
             const isOn = !!selectedCats.find(c => c.id === cat.id);
             return (
-              <button key={cat.id}
-                onClick={() => toggleCat(cat)}
+              <button key={cat.id} onClick={() => toggleCat(cat)}
                 style={{
                   padding: "5px 12px", borderRadius: 20, whiteSpace: "nowrap",
                   border: `1.5px solid ${isOn ? HSK_COLORS[selectedHsk] : "rgba(255,255,255,.08)"}`,
@@ -675,7 +844,7 @@ function FilterBar({ allWords, selectedHsk, setSelectedHsk, selectedCats, setSel
         </div>
       )}
 
-      {/* ── АКТИВНЫЕ ТЕГИ ── */}
+      {/* Активные теги */}
       {(selectedCats.length > 0 || selectedWords.length > 0) && (
         <div style={{ padding: "6px 16px 10px", borderTop: "1px solid rgba(255,255,255,.05)" }}>
           <div style={{ fontSize: 10, letterSpacing: 2, color: "rgba(255,255,255,.2)", textTransform: "uppercase", marginBottom: 6 }}>Активный набор</div>
@@ -717,7 +886,6 @@ export default function TrainerPage() {
   const [selectedCats, setSelectedCats] = useState([]);
   const [selectedWords, setSelectedWords] = useState([]);
 
-  // Слово из WordList → Draw
   const [drawFocusWord, setDrawFocusWord] = useState(null);
 
   const isLocked = !user && mode !== 'quiz' && mode !== 'wordlist';
@@ -733,7 +901,6 @@ export default function TrainerPage() {
 
   const vocab = activeVocab.length >= 2 ? activeVocab : words.filter(w => Number(w.hsk) === selectedHsk);
 
-  // Переход из WordList в Draw для конкретного слова
   const handleGoToDraw = (word) => {
     setDrawFocusWord(word);
     setMode("draw");
@@ -754,14 +921,13 @@ export default function TrainerPage() {
 
   function finishSession() { setFinished(true); }
 
-  // Сброс при смене фильтра
   useEffect(() => { restart(); }, [selectedHsk, selectedCats, selectedWords]);
 
   if (loading) {
     return (
       <div className={styles.root} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
         <div style={{ textAlign: 'center' }}>
-          <Loader2 size={48} className="animate-spin" style={{ color: '#C0392B', marginBottom: 16, margin: '0 auto' }} />
+          <Loader2 size={48} style={{ color: '#C0392B', marginBottom: 16, margin: '0 auto', animation: 'spin 1s linear infinite' }} />
           <p style={{ color: 'rgba(255,255,255,0.5)' }}>Загрузка слов из облака...</p>
         </div>
       </div>
@@ -796,20 +962,24 @@ export default function TrainerPage() {
         setSelectedWords={setSelectedWords}
       />
 
-      {/* ── Мобайл: нижняя панель режимов ── */}
+      {/* Мобайл: нижняя панель режимов */}
       <div className={styles.mobileModebar}>
         {MODES.map(m => (
           <button key={m.id}
             onClick={() => { setMode(m.id); restart(); }}
             className={styles.mobileModeBtn}
-            style={{ background: mode === m.id ? 'rgba(192,57,43,.15)' : 'transparent', borderTop: `2px solid ${mode === m.id ? '#C0392B' : 'transparent'}`, color: mode === m.id ? 'white' : 'rgba(255,255,255,.4)' }}>
+            style={{
+              background: mode === m.id ? 'rgba(192,57,43,.15)' : 'transparent',
+              borderTop: `2px solid ${mode === m.id ? '#C0392B' : 'transparent'}`,
+              color: mode === m.id ? 'white' : 'rgba(255,255,255,.4)'
+            }}>
             <span style={{ fontSize: 18 }}>{m.icon}</span>
             <span style={{ fontSize: 10, marginTop: 2 }}>{m.name}</span>
           </button>
         ))}
       </div>
 
-      {/* ── Мобайл: score-бар ── */}
+      {/* Мобайл: score-бар */}
       <div className={styles.mobileScorebar}>
         <span style={{ color: '#7EC89A', fontWeight: 700 }}>✓ {correct}</span>
         <span style={{ color: 'rgba(255,255,255,.3)', fontSize: 12 }}>|</span>
@@ -821,7 +991,7 @@ export default function TrainerPage() {
         </span>
       </div>
 
-      {/* ── СЕТКА ── */}
+      {/* СЕТКА */}
       <div className={styles.trainerGrid}>
 
         {/* ЛЕВЫЙ САЙДБАР */}
@@ -858,7 +1028,10 @@ export default function TrainerPage() {
                 <div style={{ fontSize: 72, marginBottom: 12 }}>🏆</div>
                 <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 36, fontWeight: 900, color: '#D4A017', marginBottom: 8 }}>Отлично!</div>
                 <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: 30 }}>Верно: {correct}, Ошибок: {wrong}</p>
-                <button onClick={restart} className={styles.nextBtn} style={{ background: '#C0392B', color: "white", border: "none", borderRadius: 20, padding: "15px 40px", fontSize: 18, fontWeight: 700, cursor: "pointer" }}>Ещё раз →</button>
+                <button onClick={restart} className={styles.nextBtn}
+                  style={{ background: '#C0392B', color: "white", border: "none", borderRadius: 20, padding: "15px 40px", fontSize: 18, fontWeight: 700, cursor: "pointer" }}>
+                  Ещё раз →
+                </button>
               </div>
             ) : (
               <div key={`${mode}-${sessionKey}`}>
@@ -896,7 +1069,6 @@ export default function TrainerPage() {
             </div>
           </div>
 
-          {/* Быстрый переход в Список */}
           {mode !== "wordlist" && (
             <button
               onClick={() => { setMode("wordlist"); restart(); }}
